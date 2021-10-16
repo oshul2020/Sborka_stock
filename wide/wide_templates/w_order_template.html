@@ -1,0 +1,278 @@
+{% macro cut_table(data) -%}
+<div class="row border-bottom">
+	<span class="c1 mr-2" onclick="hide('#cut')">&#10005;</span> <span class="font-weight-bold">ножи</span> 
+</div>
+<div class="row">
+<table class="table table-striped">
+	<thead>
+		<tr><th></th><th>Z10</th><th>Z11</th><th>Z60</th><th>Z61</th><th>R203</th></tr>
+		<tr><td>Zund</td><td>-</td><td>{{data["233"].amount}}</td><td>{{data["210"].amount}}</td><td>{{data["264"].amount}}</</td><td>{{data["158"].amount}}</td></tr>
+		<tr><td>Keen</td><td>{{data["236"].amount}}</td><td>{{data["154"].amount}}</td><td>-</td><td>-</td><td>-</td></tr>
+	</thead>
+	
+</table>	
+</div>
+{%- endmacro %}
+
+{% macro constr_table(data) -%}
+<div class="row border-bottom">
+	<span class="c1 mr-2" onclick="hide('#constr')">&#10005;</span> <span class="font-weight-bold">конструкции</span> 
+</div>
+<div class="row">
+<table class="table table-striped">
+	<thead>
+		<tr><th>размер</th><th>X-e</th><th>X-p</th><th>R-s</th><th>R-p</th><th>Cli</th></tr>
+		<tr><td>0,4</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{{data["185"].amount}}</td></tr>
+		<tr><td>0,6</td><td>{{data["163"].amount}}</td><td>{{data["164"].amount}}</td><td>-</td><td>-</td><td>{{data["186"].amount}}</td></tr>
+		<tr><td>0,8</td><td>-</td><td>{{data["165"].amount}}</td><td>{{data["171"].amount}}</td><td>{{data["177"].amount}}</td><td>{{data["187"].amount}}</td></tr>
+		<tr><td>1,0</td><td>-</td><td>-</td><td>{{data["172"].amount}}</td><td>{{data["178"].amount}}</td><td>{{data["188"].amount}}</td></tr>
+		<tr><td>1,2</td><td>-</td><td>{{data["166"].amount}}</td><td>{{data["173"].amount}}</td><td>{{data["179"].amount}}</td><td>{{data["189"].amount}}</td></tr>
+		<tr><td>1,5</td><td>-</td><td>-</td><td>{{data["174"].amount}}</td><td>{{data["180"].amount}}</td><td>{{data["190"].amount}}</td></tr>
+	</thead>
+	
+</table>	
+</div>
+{%- endmacro %}
+
+{% macro inks_table(data) -%}
+<div class="row border-bottom">
+	<span class="c1 mr-2" onclick="hide('#inks')">&#10005;</span> <span class="font-weight-bold">чернила</span> 
+</div>
+<div class="row">
+<table class="table table-striped">
+	<thead>
+		<tr><th>цвет</th><th>Spicy</th><th>BS3</th><th>CS100</th><th>Resi</th><th>KX1</th><th>Epson</th></tr>
+	</thead>
+	<tr><td>С</td><td>{{data["82"].amount}}</td><td>{{data["101"].amount}}</td><td>{{data["105"].amount}}</td><td>{{data["96"].amount}}</td><td>{{data["87"].amount}}</td><td>{{data["118"].amount}}</td></tr>
+	<tr><td>M</td><td>{{data["83"].amount}}</td><td>{{data["102"].amount}}</td><td>{{data["106"].amount}}</td><td>{{data["97"].amount}}</td><td>{{data["88"].amount}}</td><td>{{data["119"].amount}}</td></tr>
+	<tr><td>Y</td><td>{{data["84"].amount}}</td><td>{{data["103"].amount}}</td><td>{{data["107"].amount}}</td><td>{{data["98"].amount}}</td><td>{{data["89"].amount}}</td><td>{{data["117"].amount}}</td></tr>
+	<tr><td>K</td><td>{{data["85"].amount}}</td><td>{{data["104"].amount}}</td><td>{{data["108"].amount}}</td><td>{{data["99"].amount}}</td><td>{{data["90"].amount}}</td><td>{{data["121"].amount}}</td></tr>
+	<tr><td>Lc</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{{data["91"].amount}}</td><td>{{data["115"].amount}}</td></tr>
+	<tr><td>Lm</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{{data["92"].amount}}</td><td>{{data["114"].amount}}</td></tr>
+	<tr><td>Lk</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{{data["120"].amount}}</td></tr>
+	<tr><td>O</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{{data["116"].amount}}</td></tr>
+	<tr><td>R</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{{data["122"].amount}}</td></tr>
+	<tr><td>W</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{{data["93"].amount}}</td><td>-</td></tr>
+	<tr><td>V</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{{data["94"].amount}}</td><td>-</td></tr>
+	<tr><td>S/F</td><td>{{data["86"].amount}}</td><td>{{data["207"].amount}}</td><td>-</td><td>{{data["100"].amount}}</td><td>{{data["95"].amount}}</td><td>{{data["204"].amount}}</td></tr>
+	
+</table>	
+</div>
+{%- endmacro %}
+
+{% macro plastic_table(data) -%}
+<div class="row border-bottom">
+	<span class="c1 mr-2" onclick="hide('#plastic')">&#10005;</span> <span class="font-weight-bold">пластик</span> 
+</div>
+<div class="row">
+<table class="table table-striped">
+	<thead>
+		<tr><th>размер</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>8</th><th>10</th><th>t2</th><th>t3</th><th>m2</th><th>m3</th><th>comp</th><th>pen</th></tr>
+	</thead>
+	<tr><td>1,00x1,00</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{{data["110"].amount}}</td><td>{{data["111"].amount}}</td><td>{{data["112"].amount}}</td><td>{{data["113"].amount}}</td><td>-</td><td>-</td></tr>
+	<tr><td>1,00x1,40</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+	<tr><td>1,00x2,05</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{{data["77"].amount}}</td><td>{{data["78"].amount}}</td><td>{{data["79"].amount}}</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{{data["247"].amount}}</td></tr>
+	<tr><td>1,22x2,44</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{{data["80"].amount}}</td></tr>
+	<tr><td>1,25x1,95</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>{{data["81"].amount}}</td><td>-</td></tr>
+	<tr><td>1,52x2,05</td><td>{{data["218"].amount}}</td><td>{{data["213"].amount}}</td><td>{{data["212"].amount}}</td><td>{{data["214"].amount}}</td><td>{{data["211"].amount}}</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+	
+</table>	
+</div>
+{%- endmacro %}
+
+{% macro banner_table(data) -%}
+<div class="row border-bottom">
+	<span class="c1 mr-2" onclick="hide('#banner')">&#10005;</span> <span class="font-weight-bold">баннер</span> 
+</div>
+<div class="row">
+<table class="table table-striped">
+	<thead>
+		<tr><th>ширина</th><th>510</th><th>440</th><th>lam</th><th>mesh</th></tr>
+	</thead>
+	<tr><td>1,10 м</td><td>{{data["18"].amount}}</td><td>{{data["12"].amount}}</td><td>{{data["6"].amount}}</td><td>-</td></tr>
+	<tr><td>1,37 м</td><td>{{data["17"].amount}}</td><td>{{data["11"].amount}}</td><td>{{data["5"].amount}}</td><td>-</td></tr>
+	<tr><td>1,60 м</td><td>{{data["16"].amount}}</td><td>{{data["10"].amount}}</td><td>{{data["4"].amount}}</td><td>{{data["22"].amount}}</td>	</tr>	
+	<tr><td>2,20 м</td><td>{{data["15"].amount}}</td><td>{{data["9"].amount}}</td><td>{{data["3"].amount}}</td><td>{{data["21"].amount}}</td>	</tr>
+	<tr><td>2,50 м</td><td>{{data["14"].amount}}</td><td>{{data["8"].amount}}</td><td>{{data["2"].amount}}</td><td>-</td></tr>
+	<tr><td>3,20 м</td><td>{{data["13"].amount}}</td><td>{{data["7"].amount}}</td><td>{{data["1"].amount}}</td><td>{{data["19"].amount}}</td>	</tr>
+</table>	
+</div>
+{%- endmacro %}
+
+{% macro vynil_table(data) -%}
+<div class="row border-bottom">
+	<span class="c1 mr-2" onclick="hide('#vynil')">&#10005;</span> <span class="font-weight-bold">пленка</span> 
+</div>
+<div class="row">
+<table class="table table-striped">
+	<thead>
+		<tr><th>ширина</th><th>gl</th><th>pr</th><th>mat</th><th>mpr</th><th>legko</th><th>blk</th><th>perf</th><th>ora</th><th>a_ora</th><th>lg_ora</th><th>lm_ora</th><th>l_npol</th><th>arb</th><th>lg_arb</th><th>lm_arb</th></tr>
+	</thead>
+	<tr><td class="text-nowrap">1,00-1,06</td><td>{{data["23"].amount}}</td><td>{{data["31"].amount}}</td><td>{{data["27"].amount}}</td><td>{{data["137"].amount}}</td><td>{{data["38"].amount}}</td><td>{{data["35"].amount}}</td><td>{{data["46"].amount}}</td><td>{{data["50"].amount}}</td><td>-</td>                    <td>-</td>                     <td>-</td>                     <td>-</td>                     <td>{{data["42"].amount}}</td><td>{{data["123"].amount}}</td><td>{{data["128"].amount}}</td></tr>
+	<tr><td class="text-nowrap">1,26-1,27</td><td>{{data["24"].amount}}</td><td>{{data["32"].amount}}</td><td>{{data["28"].amount}}</td><td>{{data["138"].amount}}</td><td>{{data["39"].amount}}</td><td>{{data["36"].amount}}</td><td>{{data["47"].amount}}</td><td>{{data["51"].amount}}</td><td>-</td>                    <td>-</td>                     <td>-</td>                     <td>-</td>                     <td>{{data["43"].amount}}</td><td>{{data["124"].amount}}</td><td>{{data["129"].amount}}</td></tr>
+	<tr><td class="text-nowrap">1,30-1,40</td><td>{{data["25"].amount}}</td><td>{{data["33"].amount}}</td><td>{{data["29"].amount}}</td><td>{{data["139"].amount}}</td><td>-</td>                    <td>-</td>                    <td>{{data["48"].amount}}</td><td>{{data["52"].amount}}</td><td>{{data["54"].amount}}</td><td>{{data["132"].amount}}</td><td>{{data["134"].amount}}</td><td>{{data["133"].amount}}</td><td>{{data["44"].amount}}</td><td>{{data["125"].amount}}</td><td>{{data["130"].amount}}</td></tr>
+	<tr><td class="text-nowrap">1,52-1,60</td><td>{{data["26"].amount}}</td><td>{{data["34"].amount}}</td><td>{{data["30"].amount}}</td><td>{{data["140"].amount}}</td><td>{{data["41"].amount}}</td><td>{{data["37"].amount}}</td><td>{{data["49"].amount}}</td><td>{{data["53"].amount}}</td><td>-</td>                    <td>-</td>                     <td>-</td>                     <td>-</td>                     <td>{{data["45"].amount}}</td><td>{{data["126"].amount}}</td><td>{{data["131"].amount}}</td></tr>
+</table>	
+</div>
+{%- endmacro %}
+
+{% macro paper_table(data) -%}
+<div class="row border-bottom">
+	<span class="c1 mr-2" onclick="hide('#paper')">&#10005;</span> <span class="font-weight-bold">бумага</span> 
+</div>
+<div class="row">
+<table class="table table-striped">
+	<thead>
+		<tr><th>ширина</th><th>150</th><th>200</th><th>bback</th><th>poster</th></tr>
+	</thead>
+	<tr><td>1,27-1,29</td><td>{{data["57"].amount}}</td><td>{{data["59"].amount}}</td><td>-</td>                    <td>-</td></tr>
+	<tr><td>1,37</td>     <td>-</td>                    <td>-</td>                    <td>-</td>                    <td>{{data["61"].amount}}</td></tr>
+	<tr><td>1,56-1,60</td>     <td>{{data["58"].amount}}</td><td>{{data["60"].amount}}</td><td>{{data["56"].amount}}</td><td>-</td></tr>	
+</table>
+</div>	
+{%- endmacro %}
+
+{% macro canvas_table(data) -%}
+<div class="row border-bottom">
+	<span class="c1 mr-2" onclick="hide('#canvas')">&#10005;</span> <span class="font-weight-bold">холст</span> 
+</div>
+<div class="row">
+<table class="table table-striped">
+	<thead>
+		<tr><th>ширина</th><th>holst_s</th><th>holst_n</th></tr>
+	</thead>
+	<tr><td>1,27</td><td>-</td>                    <td>{{data["206"].amount}}</td></tr>
+	<tr><td>1,52</td><td>{{data["66"].amount}}</td><td>{{data["71"].amount}}</td> </tr>	
+</table>
+</div>	
+{%- endmacro %}
+
+{% macro table(data) -%}
+<table class="table table-striped">
+	<thead>
+	<tr>
+		<th scope="col"> </th>
+		{% for symbol in data.x_header %}
+			<th class="rotated-text">
+				<div><span>{{ symbol|truncate(10, True,'..',0)}}</span></div>
+			</th>
+		{% endfor %}
+	</tr>
+	</thead>
+	{% for size in data.y_header %}
+		<tr>
+			<td class="text-nowrap" style="border-right: 1px solid #ccc;">{{size | truncate(9, True)}}</td>
+			
+			{% for material in data.array[loop.index0] %}
+				{% if  material %}
+					<td class="text-center" style="border-right: 1px solid #ccc;">{{material.amount}}</td>
+				{% else%}
+					<td class="text-center" style="border-right: 1px solid #ccc;">-</td>
+				{% endif %}
+			{% endfor %}
+		</tr>
+	{% endfor %}
+</table>	
+{%- endmacro %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta charset="UTF-8" name="viewport" content="initial-scale=1, width=device-width">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" >
+        <link href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+		<link href="/static/styles.css" rel="stylesheet">
+        
+		<script src="https://code.jquery.com/jquery-3.4.1.js" ></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+		<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+		
+		<script src="/static/md5.js"></script>
+		<script src="/static/scripts.js"></script>
+		<script src="/static/stock_scripts.js"></script>
+		
+		<script>
+			function hide(id) {
+				$(id).hide( "slow");
+			}
+		</script>
+		
+		<title>Шаблон заказа материалов</title>
+		
+		<style type="text/css">
+			th.rotated-text {
+				height: 140px;
+				white-space: nowrap;
+			}
+
+			th.rotated-text > div {
+				transform:
+				translate(27px, 5px)
+				rotate(315deg);
+				width: 30px;
+			}
+			th.rotated-text > div > span {
+				padding: 5px 10px;
+				border-bottom: 1px solid #ccc;
+			}
+			
+			tr {
+				line-height: 10px;
+				min-height: 10px;
+				height: 10px;
+			}
+		</style>
+
+ 
+    </head>
+
+
+    <body>
+		
+			<div class="row">
+				<div class="col-2"></div>
+				<div class="col">
+					<div class="row">
+						<div class="col"><h5 class="p-1">Шаблон для заказа материалов</h5></div><div class="col text-right"><h5 class="p-1">{{now}}</h5></div>
+					</div>
+					<div class="row">
+						<div class="col m-3">
+							<div id="banner" class="w-100">{{banner_table(data['баннер'])}}</div>
+						</div>
+						<div class="col m-3">
+							<div class="row">
+								<div id="paper" class="w-100">{{paper_table(data['бумага'])}}</div>
+							</div>	
+							<div class="row">
+								<div id="canvas" class="w-100">{{canvas_table(data['холст'])}}</div>
+							</div>	
+						</div>
+					</div>
+					<div class="row mx-2">
+						<div id="vynil" class="w-100">{{vynil_table(data['пленка'])}}</div>
+					</div>	
+					<div class="row mx-2">
+						<div id="plastic" class="w-100">{{plastic_table(data['пластик'])}}</div>
+					</div>
+					<div class="row mx-2">
+						<div class="col m-3">
+							<div id="inks" class="w-100">{{inks_table(data['чернила'])}}</div>
+						</div>
+						<div class="col m-3">
+							<div class="row">
+								<div id="constr" class="w-100">{{constr_table(data['конструкция'])}}</div>
+							</div>	
+							<div class="row">
+								<div id="constr" class="w-100">{{cut_table(data['нож'])}}</div>
+							</div>
+						</div>
+						
+					</div>
+				</div>
+				<div class="col-2"></div>
+			</div>
+
+    </body>
+
+</html>

@@ -1,0 +1,134 @@
+{% extends "c_layout.html" %}
+{% import 'c_base.html' as base %}
+
+{% macro form() -%}
+<form class="form" id="entity_form">
+	<div class="row">
+		<div class="col-2">
+			<input type="number" class="form-control" id="width" 
+							placeholder="ширина" min="0">
+		</div>
+		<span class="pt-2">&#10006;</span>
+		<div class="col-2">
+			<input type="number" class="form-control" id="height" 
+							placeholder="высота" min="0">
+		</div>
+		<span class="pt-2">мм</span>
+		<div class="col-4">
+			<input type="text" class="form-control ml-2" id="title" placeholder="название">
+		</div>	
+	</div>
+
+	<button type="button" class="btn btn-primary float-right"
+		id="dialog_button" onclick="send(this, '#Dialog')"></button>
+		
+</form>
+{% endmacro %}
+
+{% macro table(sizes) -%}
+	<table class="table table-sm table-striped">
+	<tr>
+		<th>id</th>
+		<th>название</th>
+		<th></th><th></th>
+	</tr>
+		{% for size in sizes %}
+			<tr w={{size.width}} h={{size.height}} title="{{size.title}}">
+				<td>{{ size.id }}</td>
+				<td>{{ size | pprint  }}</td>
+				{{ base.command(size.id) }}
+			</tr>
+		{% endfor %}
+	</table>	
+{%- endmacro %}
+
+{% macro mainFrame(sizes) -%}
+<div class="container">
+	<div class="row">
+		<div class="col"></div>
+		<div class="col-5">
+			<div  style="height: 30px;">{{base.flashed()}}</div>
+			<label>форматы / размеры  </label>&nbsp;&nbsp;
+			{{base.command(0)}}
+			{{table(sizes)}}
+		</div>
+		<div class="col"></div>
+	</div>
+</div>
+{%- endmacro %}
+
+
+{% block main %}
+<div id="mainFrame">
+	{{mainFrame(sizes)}}
+</div>
+
+{{base.dialog()}}
+
+<div style="display:none">
+	{{form()}}
+	{{base.delete_form()}}
+</div>	
+	
+<script>
+var columns = {};
+
+function dialog(elm, id, param) {
+	columns["cmd"] = param
+	columns["id"] = id
+	
+	var tr = $(elm).parent();
+	var td = tr.find('td');
+		
+	if (param == 'update') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('изменить');
+		$('#dialog_button').text('изменить');
+		$('#width').val($(tr).attr('w'));
+		$('#height').val($(tr).attr('h'));
+		$('#title').val($(tr).attr('title'));
+		
+	} else if (param == 'insert') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('добавить');
+		$('#dialog_button').text('добавить');
+		
+	} else {
+		$('#dialog_form').html($('#delete_form').html());
+		$('#dialog_button').text('удалить');
+		$('#dialog_title').text('удалить');
+		$('#delete_title').text($(td[1]).text())  
+	}
+	$('#Dialog').modal()
+}
+
+function send(elm, idDialog) {
+	var w = $('#width').val();
+	var h = $('#height').val();
+	var title = $('#title').val();
+	
+	if (columns['cmd'] != 'delete') {
+		if (!w || !h ){
+			return
+		}
+	}
+	columns['width'] =  w;
+	columns['height'] =  h;
+	columns['title'] =  $.trim(title);
+	$(idDialog).modal('toggle');
+
+	$.ajax({
+        url: '/cifra/size',
+        data: columns,
+		type: 'POST',
+        dataType: 'HTML',
+        success: function(res) {
+			$('#mainFrame').html(res);
+        },
+        error: function(error) {
+            console.log(error);			
+        }		
+    });}
+
+</script>
+{% endblock %}

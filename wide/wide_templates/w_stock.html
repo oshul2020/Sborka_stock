@@ -1,0 +1,390 @@
+{% extends "w_layout.html" %}
+{% import 'w_base.html' as base %}
+
+{% macro search() -%}
+<div class="input-group mb-3">
+	<input type="text" class="form-control" placeholder="поиск..." id="search" onchange="search()">
+	<div class="input-group-append">
+		<span class="input-group-text c1" onclick="search()">&#128269;</span>
+	</div>
+</div>
+{% endmacro %}
+
+{% macro info_form() -%}
+<form class="form" id="info_form">
+	<div class="row">
+		<div class="col">
+			<textarea class="form-control" cols="100" rows="2" placeholder="Инфо" id="material_info"></textarea>
+		</div>	
+	</div>
+</form>
+{%- endmacro %}
+
+{% macro form() -%}
+<form class="form" id="entity_form">
+	<div class="row border-bottom">
+		<h5 class="font-weight-bold mb-2" id="title"></h5>
+	</div>
+		
+	<div class="row border-bottom" id="order_form">
+		<div class="form-inline my-2">
+			<select class="custom-select col-3" id="sorder_id" onchange="onOrderChange(this)">
+				<option value="0">Заказ ...</option>
+			</select>
+		
+			<label class="pl-4 p-2 text-right">в заказе</label>
+			<input  class="form-control col-2 bg-light text-right" type="number" id="order_amount" 
+				value="0" disabled />
+
+			<label class="pl-4 p-2 text-right">получено</label>
+			<input  class="form-control col-2 bg-light text-right" type="number" id="order_result" 
+				value="0" disabled />
+		</div>
+	</div>	
+	
+	<div class="row border-bottom">
+		<textarea class="form-control my-2" cols="100" rows="2" placeholder="Инфо" id="info"></textarea>
+	</div>
+	<div class="row">
+		<div class="form-inline my-2">
+			<input class="form-control col-2 text-right mr-2" type="number" id="amount" 	value="1" min="0" max="300" step="1"/>
+			<label class="font-weight-bold mr-5" for="amount" id="unit"></label>	
+
+			<label class="text-right mr-2" for="stock_amount">на складе:</label>	
+			<input class="form-control col-2 text-right bg-light mr-5"  type="number" id="stock_amount" disabled>
+			
+			<label class="text-right mr-2" for="stock_capacity">макс.:</label>	
+			<input class="form-control col-2 text-right bg-light"  type="number" id="stock_capacity" disabled>
+		</div>	
+	</div>
+	<div class="row">
+		<div class="col my-2 mr-n2">
+			<button type="button" class="btn btn-primary float-right"
+					id="dialog_button" onclick="send(this, '#Dialog')"></button>	
+		</div>
+
+
+	</div>
+</form>
+{%- endmacro %}
+
+{% macro contextMenu(entity) -%}
+<div class="dropdown dropleft">
+	<button class="btn btn-sm" type="button" id="dropdownMenuButton" data-toggle="dropdown" 
+		aria-haspopup="true" aria-expanded="false">&#9776;
+	</button>
+	<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+		<a class="dropdown-item" href="#" data-toggle="modal" onclick="dialog({{entity.id}}, 'writeOff')">списать</a>
+		<a class="dropdown-item" href="#" data-toggle="modal" onclick="dialog({{entity.id}}, 'order')">заказать</a> 
+		{% if session['wide_admin'] %}
+			<div class="dropdown-divider"></div>
+			<a class="dropdown-item" href="#" data-toggle="modal" onclick="dialog({{entity.id}}, 'add')">принять</a> 
+			<a class="dropdown-item" href="#" data-toggle="modal" onclick="dialog({{entity.id}}, 'update')">инвентаризация</a> 	
+		{%endif%}
+		
+	</div>
+</div>
+{%- endmacro %}
+
+{% macro menu_category() -%}
+	<div class="list-group" role="tablist">
+		{% for category in  categories %}
+			<div class="list-group-item c1" data-toggle="list" onclick="getMaterials({{category.id}})">
+				{{ category.title }}
+			</div>
+		{% endfor %}
+	</div>
+{%- endmacro %}	
+
+{% macro rows(entity) -%}
+	{% set color = ''%}
+	{% if entity.amount|int() <= entity.minimal|int() %}
+		{% set color = 'table-danger' %}
+	{% endif%}
+	
+	<td class="{{color}}">
+		{% if session['wide_admin'] and session['wide_admin'].id == 1%}
+			id: {{entity.id}}
+		{%endif%}
+
+	</td>
+	<td  class="{{color}}">{{entity.symbol}}</td>
+	<td class="c1 text-right {{color}}" onclick="StatDialog({{entity.id}}, 'size')" title="статистика по размеру">
+		{{entity.size}}
+	</td>
+	<td class="{{color}}">
+		{% if session['wide_user'] %}
+			{{contextMenu(entity)}}
+		{% endif %}	
+	</td>	
+	<td class="text-right {{color}}">{{entity.amount}}</td>
+	<td class="text-right {{color}}">{{entity.unit.title}}</td>
+	<td class="{{color}}">
+		{% if entity.info %}
+			<span class="c1" onclick="InfoDialog('{{entity.info}}')" title="инфо">&#9888;</span>
+		{% endif%}	
+	</td>	
+{%- endmacro %}
+
+{% macro table(data) -%}
+	<div class="row">
+	<div class="col mx-4">
+	<table class="table table-sm" id="stockTable">
+	<thead>
+		<tr></tr>
+	</thead>
+		{% for title, materials in data.items() %}
+				<tr style="border-top: 2px solid; ">
+				
+				<td class="c1" style="width: 400px;" rowspan="{{materials|length}}"	
+					onclick="StatDialog({{materials[0].id}}, 'material')" title="статистика по материалу">
+					{{title}}
+				</td>
+					{{ rows(materials[0])}}
+				</tr>
+				{% for material in materials[1:] %}
+					<tr>
+						{{ rows(material)}}
+					</tr>
+				{% endfor %}			
+		{% endfor %}				
+	</table>
+	</div>
+	</div>	
+{%- endmacro %}
+
+{% block main %}
+<style type="text/css">
+	.list-group-item {
+		padding: .5rem 1rem;
+	}
+	.list-group-item.active {
+		background-color: var(--secondary);
+		border-color: var(--secondary);
+	}
+</style>
+
+<div class="row">
+	<div class="col-2">
+		{{search()}}
+		{{menu_category()}}
+	</div>
+	<div class="col">
+		<div  style="height: 30px;" id="flash"></div>
+		<div id="dataFrame">
+			{% include 'w_rules.html' %}
+		</div>
+	</div>
+	<div class="col-1"></div>
+
+</div> 
+
+{{base.dialog()}}
+
+<div style="display:none">
+	{{info_form()}}
+	{{form()}}
+</div>	
+
+{% include 'w_stat.html' %}
+
+<script>
+var columns = {};
+$('#search').focus(); 
+$('#search').select(); 
+
+function setMaterialInfo(res) {
+	var stockAmount = res['amount'];
+	var stockCapacity = res['capacity'];
+	var amount = stockCapacity - stockAmount; 
+	columns['category_id'] = res['category']['id'];
+	$('#title').text(res['category']['title'] + ' ' + res['title'] +  ' ' + res['size']['title'] );
+	$('#unit').text(res['unit']['title']);
+	$('#stock_amount').val(stockAmount);
+	$('#stock_capacity').val(stockCapacity);
+	if (columns["cmd"] == 'order') {
+		$('#info').val(decodeURI(res['info']));
+		$('#info').prop('readonly', true);
+		
+		if (amount > 0) {
+			$('#amount').val(amount);
+		} else {
+			$('#amount').val(0);
+		}
+	} else {
+		$('#amount').val(1);
+	}	
+	
+	
+	$('#dialog_button').prop('disabled', false);
+}
+
+function flash(html) {
+	$('#flash').append(html)
+	setTimeout(function(){$('#flash').text('');}, 5000);
+}
+
+function getMaterials(category_id) {
+	$.ajax({
+        url: '/wide/data',
+        data: {cmd:'stock', category_id:category_id},
+		type: 'POST',
+        dataType: 'json',
+        success: function(res) {
+			$('#dataFrame').html(res[0]);
+			flash(res[1]);
+        },
+        error: function(error) {
+            console.log(error);			
+        }		
+    });
+}	
+
+function GetMaterialInfo(id) {
+	$.ajax({
+		url: '/wide/jdata',
+		data: {'cmd':'info', 'entity':'Material', 'id':id},
+		type: 'POST',
+		dataType: 'json',
+		success: setMaterialInfo,
+		error: function(error) {
+			console.log(error);
+		}
+	});
+}
+
+function onOrderChange(elm) {
+	var amount = $("#sorder_id option:selected").attr('amount');
+	var result = $("#sorder_id option:selected").attr('result');
+	var d = amount - result;
+	$('#order_amount').val(amount);
+	$('#order_result').val(result);
+	if (d < 0) {
+		$('#amount').val(1);
+	} else {
+		$('#amount').val(amount - result);
+	}
+
+}
+
+function SetupOrderSelect(id) {
+	$('#order_amount').val(0);
+	$('#order_result').val(0);
+	$('#sorder_id').html('<option value="0">Заказ ...</option>');
+	
+	$.ajax({
+        url: '/wide/jdata',
+        data: {cmd:'orders_material', material_id:id},
+        type: 'POST',
+		dataType: 'json',
+        success: function(res) {
+			$.each(res, function(i,r){
+				var sorder = r['Sorder']
+				var amountStr = " amount=" + r['Request']['amount'];
+				var resultStr = " result=" + r['Request']['result'];
+				$('#sorder_id').append("<option value=" + sorder['id'] + amountStr + resultStr + ">" +sorder['title']+"</option>");
+			})
+		},
+        error: function(error) {
+            console.log(error);
+        }
+    });
+}
+
+function dialog(id, param) {
+	columns["cmd"] = param
+	columns["id"] = id
+	
+	$('#dialog_form').html($('#entity_form').html());
+	
+	if (param == 'add') {
+		SetupOrderSelect(id);
+		$('#order').attr("hidden",false);
+		$('#dialog_title').text('принять на главный склад');
+
+	} else if (param == 'writeOff') {
+		$('#order_form').attr("hidden",true);
+		$('#info_form').attr("hidden",true);
+		$('#dialog_title').text('списать со склада');
+
+	} else if (param == 'order') {
+		$('#order_form').attr("hidden",true);
+		$('#dialog_title').text('заказать материал');	
+
+	} else if (param == 'update') {
+		$('#order_form').attr("hidden",true);
+		$('#dialog_title').text('изменить количество на складе');
+	}
+
+	$('#dialog_button').text('подтвердить');
+	GetMaterialInfo(id);
+	$('#Dialog').modal('show')
+	$('#amount').focus(); 
+	$('#amount').select(); 
+}
+
+function send(elm, idDialog) {
+	var amount = $('#amount').val();
+	var sorder_id = $('#sorder_id').val();
+	columns['amount'] =  $('#amount').val();
+	columns['info'] =  $('#info').val();
+	
+	if (sorder_id > 0) {
+		columns['sorder_id'] =  sorder_id;
+	}
+	
+	$(idDialog).modal('toggle');
+
+	$.ajax({
+        url: '/wide/stock',
+        data: columns,
+		type: 'POST',
+        dataType: 'json',
+        success: function(res) {
+			$('#dataFrame').html(res[0]);
+			flash(res[1]);
+			alert = res[2];
+			if (alert) {
+				html = '<h4 class="text-danger">'+alert+'</h4>'
+				$('#dialog_form').html(html);
+				$('#dialog_title').text('внимание');
+				$('#Dialog').modal('show');
+			}
+        },
+        error: function(error) {
+			flash('<div class="alert-danger" role="alert">'+error.responseText+'</div>')
+        }		
+    });}
+
+function search() {
+	var searchText = $('#search').val();
+	if (!searchText) {
+		return;
+	}
+	$.ajax({
+        url: '/wide/search',
+        data: {text:searchText},
+		type: 'POST',
+        dataType: 'json',
+        success: function(res) {
+			$('#dataFrame').html(res[0]);
+			flash(res[1]);
+        },
+        error: function(error) {
+			flash('<div class="alert-danger" role="alert">'+error.responseText+'</div>')
+			setTimeout(function(){$("body").load('/wide');}, 5000);
+        }		
+    });
+}
+
+function InfoDialog(info) {
+	//console.log(info);
+	$('#dialog_form').html($('#info_form').html());
+	$('#dialog_title').text('информация');
+	$('#material_info').val(decodeURI(info));
+	$('#Dialog').modal('show');
+}
+	
+</script>
+
+{% endblock %}

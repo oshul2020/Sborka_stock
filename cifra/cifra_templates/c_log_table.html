@@ -1,0 +1,51 @@
+{% import 'c_base.html' as base %}
+
+{% macro table(paginate, actions) -%}
+	<table class="table table-sm">
+	<tr>
+		{% if session['cifra_admin'] %}
+			<th>id</th>
+		{% endif %}	
+		
+		<th style="width: 150px;">когда</th>
+		<th>действие</th>
+		<th>материал</th>
+		<th>формат</th>
+		<th>кол-во</th>
+		<th>единицы</th>
+		<th>кто</th>
+		
+	</tr>
+		{% for rec in paginate.items %}
+			{% if rec.action == 0 %}	
+				<tr class = "table-danger" >
+			{% elif rec.action == 1 %}
+				<tr class = "table-success" >
+			{% else %}	
+				<tr>
+			{% endif %}
+				{% if session['cifra_admin'] %}
+					<td>{{ rec.id }}</td>
+				{% endif %}	
+					<td>{{ rec.time.strftime('%d-%m-%Y %H:%M') }}</td>
+					<td>
+						{{ actions[rec.action] }}
+						{% if rec.info %}
+							<a href="#" title="{{rec.info}}">&#9888;</a>
+						{% endif %}	
+					</td>
+					<td class="c1" onclick="StatDialog({{rec.material.id}}, 'density')">
+						{{ rec.material.category.title}} {{ rec.material.title}}
+					</td>
+					<td class="c1" onclick="StatDialog({{rec.material.id}}, 'material')">
+						{{ rec.material.size}} 
+					</td>
+					<td>{{ rec.amount}}</td>
+					<td>{{ rec.material.unit.title}}</td>
+					<td>{{ rec.user}}</td>
+				</tr>
+		{% endfor %}
+	</table>	
+	{{ base.pagination(paginate)}}	
+	
+{%- endmacro %}

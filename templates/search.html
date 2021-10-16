@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block search %}
+	<div class="input-group">
+		<input type="text" class="form-control" placeholder="Поиск в {{ where }}" name="q">  
+		<input type="hidden" name="where" value={{ where }}>
+		<button type="submit" class="btn btn-dark">&#x1F50D;</button>
+	</div>
+{% endblock %}
+
+{#
+	{% block sign %}
+		{% if where == 'shira' %}
+			{% include "block_sign.html" %}
+		{% endif %}	
+	{% endblock %}
+#}
+
+{% block main %}
+	<h3>  Найдено {{ data.__len__() }} файлов</h3>
+	{% for item in data%}
+		<div id="name">
+			<a href="" onclick="copyPath2Clipgoard(this)" title="запомнить путь">&#128203;</a>
+			<a class="file" href="info?file={{ item | urlencode }} ">{{ item.relative_to(dir) }}</a>
+			{{ item.stat().st_size.__rshift__(10) }}kB
+		</div>
+	{% endfor %}
+
+
+<script>
+
+function copyPath2Clipgoard(argument) {
+
+	var path = '\\\\10.20.2.22\\work\\' + $(argument).next().text().split('/').join('\\');
+	var $temp = $("<input>");
+  	$("body").append($temp);
+  	$temp.val(path).select();
+  	document.execCommand("copy");
+  	$temp.remove();
+}
+
+</script>
+
+{% endblock %}
+

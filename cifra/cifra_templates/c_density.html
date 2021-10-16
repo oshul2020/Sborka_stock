@@ -1,0 +1,120 @@
+{% extends "c_layout.html" %}
+{% import 'c_base.html' as base %}
+
+{% macro form() -%}
+<form class="form" id="entity_form">
+	<div class="row">
+		<div class="col-3">
+			<input type="number" class="form-control" id="density" 
+							placeholder="плотность" min="0">
+		</div>
+		<span class="pt-2">г/м&sup2;</span>
+	</div>
+
+	<button type="button" class="btn btn-primary float-right"
+		id="dialog_button" onclick="send(this, '#Dialog')"></button>
+		
+</form>
+{% endmacro %}
+
+{% macro table(densities) -%}
+	<table class="table table-sm table-striped">
+	<tr>
+		<th>id</th>
+		<th>плотность</th>
+		<th></th><th></th>
+	</tr>
+		{% for density in densities %}
+			<tr d={{density.density}}>
+				<td>{{ density.id }}</td>
+				<td>{{ density | pprint }}</td>
+				{{ base.command(density.id) }}
+			</tr>
+		{% endfor %}
+	</table>	
+{%- endmacro %}
+
+{% macro mainFrame(densities) -%}
+<div class="container">
+	<div class="row">
+		<div class="col"></div>
+		<div class="col-5">
+			<div  style="height: 30px;">{{base.flashed()}}</div>
+			<label>плотности  </label>&nbsp;&nbsp;
+			{{base.command(0)}}
+			{{table(densities)}}
+		</div>
+		<div class="col"></div>
+	</div>
+</div>
+{%- endmacro %}
+
+
+{% block main %}
+<div id="mainFrame">
+	{{mainFrame(densities)}}
+</div>
+
+{{base.dialog()}}
+
+<div style="display:none">
+	{{form()}}
+	{{base.delete_form()}}
+</div>	
+	
+<script>
+var columns = {};
+
+function dialog(elm, id, param) {
+	columns["cmd"] = param
+	columns["id"] = id
+	
+	var tr = $(elm).parent();
+	var td = tr.find('td');
+		
+	if (param == 'update') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('изменить');
+		$('#dialog_button').text('изменить');
+		$('#density').val($(tr).attr('d'));
+		
+	} else if (param == 'insert') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('добавить');
+		$('#dialog_button').text('добавить');
+		
+	} else {
+		$('#dialog_form').html($('#delete_form').html());
+		$('#dialog_button').text('удалить');
+		$('#dialog_title').text('удалить');
+		$('#delete_title').text($(td[1]).text())  
+	}
+	$('#Dialog').modal()
+}
+
+function send(elm, idDialog) {
+	var d = $('#density').val();
+		
+	if (columns['cmd'] != 'delete') {
+		if (!d){
+			return;
+		}
+	}
+	columns['density'] =  d;
+	$(idDialog).modal('toggle');
+
+	$.ajax({
+        url: '/cifra/density',
+        data: columns,
+		type: 'POST',
+        dataType: 'HTML',
+        success: function(res) {
+			$('#mainFrame').html(res);
+        },
+        error: function(error) {
+            console.log(error);			
+        }		
+    });}
+
+</script>
+{% endblock %}

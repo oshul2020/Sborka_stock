@@ -1,0 +1,56 @@
+{% macro command(id) -%}
+	{% if id == 0 %}
+		<label class="c1" data-toggle="modal" onclick="dialog(this, '0', 'insert')">&#10133;</label>
+	{% else %}
+		<td class="c1 text-right" data-toggle="modal" onclick="dialog(this, '{{id}}', 'update')">&#9776;</td>
+		<td {# class="c1 text-right" data-toggle="modal" onclick="dialog(this, '{{id}}', 'delete')">&#10006; #} </td
+	{% endif %}	
+{%- endmacro %}
+
+{% macro flashed() -%}
+{% with messages = get_flashed_messages(with_categories=true) %}
+	{% if messages %}
+		{% for category, message in messages %}
+			<div class="alert-{{ category }}" role="alert">{{ message }}</div>	
+		{% endfor %}
+	{% endif %}
+{% endwith %}
+{%- endmacro %}
+
+{% macro dialog() -%}
+<div class="modal" id="Dialog" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="dialog_title"></h4>
+		<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span><span class="sr-only">Close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="col-md-auto" id="dialog_form">
+		<!- entity form ->
+		</div>
+      </div> 
+    </div>
+  </div>
+</div>
+{%- endmacro %}
+
+{% macro delete_form() -%}
+<form class="form" id="delete_form">
+	<label class="m-2" id="delete_title"></label>
+	<button type="button" class="btn btn-primary m-2 float-right"
+			id="dialog_button" onclick="send(this, '#Dialog')"></button>
+</form>
+{% endmacro %}
+
+{% macro pagination(p) -%}
+<ul class="pagination justify-content-end" style="margin:20px 0">
+	{% if p.has_prev %}
+		<li class="c1 page-item"><a class="page-link" onclick="ChangePage({{p.page-1}})">«</a></li>
+	{% endif %}		
+	{% if p.has_next %}
+		<li class="c1 page-item"><a class="page-link" onclick="ChangePage({{p.page+1}})">»</a></li>
+	{% endif %}	
+		<label class="m-2">Страница {{p.page}} / {{p.pages}}</label> 
+</ul>
+{% endmacro %}

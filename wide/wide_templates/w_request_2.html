@@ -1,0 +1,139 @@
+{% extends "w_layout.html" %}
+{% import 'w_base.html' as base %}
+
+{% macro table(requests) -%}
+<table class="table table-sm table-striped" id="requestTable">
+	<thead>
+	<tr class="text-center">
+		<th>когда</th>
+		<th>кто</th>
+		<th>категория</th>
+		<th>материал</th>
+		<th>размер</th>
+		<th class="text-right">заказать</th>
+		<th>единицы</th>
+		<th class="text-right">склад</th>
+		<th></th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for request in requests %}
+		{% set nameList = request.user.title.split(' ') %}
+		<tr entity_id="{{request.id}}">
+			<td>{{ request.timeopen.strftime('%d-%m-%y %H:%M') }}</td>
+			<td>{{request.user}}</td>
+			<td>{{ request.material.category.title }}</td>
+			<td>({{ request.material.symbol.title }})  {{ request.material.title }} </td>
+			<td>{{ request.material.size.title }}</td>
+			{% if session['wide_user'] %}
+				<td class="c1 text-right" style="width: 80px;" r_id="{{request.id}}" 
+					r_amount="{{request.amount}}" onclick="update(this)">
+					{{request.amount}}
+				</td>
+			{% else %}
+				<td class="text-right">
+					{{request.amount}}
+				</td>	
+			{% endif %}		
+			<td>{{ request.material.unit.title }}</td>
+			<td class="text-right">{{ request.material.amount }}</td>
+			{% if session['wide_admin'] %}
+				<td class="c1" onclick="send({{request.id}}, 'delete')" title="удалить">&#10006;</td>
+			{% endif %}	
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+	
+{%- endmacro %}
+
+{% macro mainFrame(requests) -%}
+<div class="container">
+	<div class="row">
+		<div class="col">
+			<div  style="height: 30px;" id="flash"></div>
+			<h5>Заявка на заказ материалов</h5>
+			<div class="mt-3" id="table">{{table(requests)}}</div>
+				
+		</div>
+	</div>
+</div>
+{%- endmacro %}
+
+{% block main %}
+<div id="mainFrame">
+	{{mainFrame(requests)}}
+</div>
+
+<script>
+var currentTD=0;
+var timeOut;
+
+function flash(html) {
+	$('#flash').append(html)
+	setTimeout(function(){$('#flash').text('');}, 5000);
+}
+
+function restoreTD(td) {
+	$(td).html($(td).attr('r_amount'));
+	$(td).attr('onclick', 'update(this)');
+}
+
+function update(elm) {
+	clearTimeout(timeOut);
+	var amount = $(elm).attr('r_amount');
+	var f = '<input id="in2" class="form-control text-right"  \
+		type="number" value='+amount+' style="width: 80px;" min="0"\
+		onkeypress="return event.charCode >= 48 && event.charCode <= 57" \
+		onkeydown="submit(this)">'
+	
+	restoreTD(currentTD);
+
+	$(elm).html(f);
+	$(elm).attr('onclick', '')
+	currentTD = elm;
+	
+	timeOut = setTimeout(function(){restoreTD(currentTD);}, 10000);
+}
+
+function submit(elm) { 
+	if (event.keyCode == 13) { 
+		//clearTimeout(timeOut);
+		var amount = $('#in2').val();
+		var id = $(currentTD).attr('r_id')
+		$.ajax({
+			url: '/wide/request',
+			data: {cmd:'update', request_id:id, request_amount:amount},
+			type: 'POST',
+			dataType: 'HTML',
+			success: function(res) {
+				$(currentTD).html(amount)
+				$(currentTD).attr('onclick', 'update(this)')
+				$(currentTD).attr('r_amount', amount)
+				currentTD=0;
+				flash('<div class="alert-success">'+res+'</div>');	
+			},
+			error: function(error) {
+				flash('<div class="alert-danger">'+error.responseText+'</div>');
+			}
+		});
+	}
+}; 
+
+function send(id, cmd) {
+	$.ajax({
+		url: '/wide/request',
+		data: {cmd:cmd, request_id:id},
+		type: 'POST',
+		dataType: 'HTML',
+		success: function(res) {
+			$('#table').html(res);
+		},
+		error: function(error) {
+			console.log(error);
+		}
+	});
+}	
+
+</script>
+{% endblock %}

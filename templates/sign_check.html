@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block main %}
+	
+	
+<div class="col col-table">
+	<table class="table table-striped">
+		<tbody >
+			{% for file in data %}
+			<div id="name">
+				<tr>
+					<td><a class="file" href="info?file={{ file.path | urlencode }} ">
+							{{ file.path.name }}</td>
+					<td><b>{{ file.path.stat().st_size | filesizeformat }}</b></td>
+					{% if file.signTime %}
+						<td><b>подписан</b></td>
+						<td>время: {{file.signTime}}</td>
+					{%else%}
+						<td><b>не подписан</b></td>
+						<td>{{file.comment}}</td>	
+					{% endif %}
+				</tr>
+			{% endfor %}
+			</div>
+		</tbody>
+	</table>
+</div>
+{% endblock %}

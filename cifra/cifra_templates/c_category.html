@@ -1,0 +1,168 @@
+{% extends "c_layout.html" %}
+{% import 'c_base.html' as base %}
+
+{% macro form() -%}
+<form class="form" id="entity_form">
+	<div class="row">
+		<div class="col">
+			<input type="text" class="form-control" id="title" placeholder="название">
+		</div>
+		<div class="col-3">
+			<select class="custom-select" id="process" onchange="">
+				<option disabled selected value=-1>процесс...</option>
+				{% for process in processes %}
+					<option value={{loop.index0}}>{{process}}</option>
+				{% endfor %}
+			</select>
+		</div>
+		<div class="col"></div>
+	</div>
+
+	
+	<div class="form-row mt-3">
+  		<div class="col-auto">
+			<label class="form-label mt-2" for="sortby">приоритет</label>
+		</div>
+		<div class="col-2 mr-4">
+			<input  class="form-control" type="number" id="sortby" 
+					value="0" min="0" step="1"/>
+		</div>
+	
+		<div class="col-auto">
+			<div class="form-check mt-2">
+				<input type="checkbox" class="form-check-input" id="active">
+				<label class="form-check-label" for="active">отображать на складе</label>
+			</div>
+		</div>
+		<div class="col-5"></div>	
+
+</div>
+	
+		<button type="button" class="btn btn-primary m-2 float-right"
+			id="dialog_button" onclick="send(this, '#Dialog')"></button>
+</form>
+{% endmacro %}
+
+{% macro table(categories, processes) -%}
+	<table class="table table-sm table-striped" id="categoryTable">
+	<thead>
+	<tr>
+		<th>id</th>
+		<th>название</th>
+		<th>процесс</th>
+		<th>на складе</th>
+		<th>приоритет</th>
+		<th></th><th></th>
+	</tr>
+	</thead>
+		{% for category in categories %}
+			<tr>
+				<td>{{ category.id }}</td>
+				<td>{{ category.title }}</td>
+				<td process={{category.process}}>{{ processes[category.process] }}</td>
+				<td active="{{category.active}}">
+				{% if category.active == 1 %}
+					да
+				{% else%}
+					нет
+				{% endif %}
+			</td>
+			<td>{{ category.sortby }}</td>
+				{{ base.command(category.id) }}
+			</tr>
+		{% endfor %}
+	</table>
+	
+{%- endmacro %}
+
+{% macro mainFrame(categories, processes) -%}
+<div class="container">
+	<div class="row">
+		<div class="col-2"></div>
+		<div class="col">
+			<div  style="height: 30px;">{{base.flashed()}}</div>
+			<label>категория  </label>&nbsp;&nbsp;
+			{{base.command(0)}}
+			{{table(categories, processes)}}
+		</div>
+		<div class="col-2"></div>
+	</div>
+</div>
+{%- endmacro %}
+
+
+{% block main %}
+<div id="mainFrame">
+	{{mainFrame(categories, processes)}}
+</div>
+
+{{base.dialog()}}
+
+<div style="display:none">
+	{{form()}}
+	{{base.delete_form()}}
+</div>	
+	
+<script>
+var columns = {};
+
+function dialog(elm, id, param) {
+	columns["cmd"] = param
+	columns["id"] = id
+	
+	var tr = $(elm).parent();
+	var td = tr.find('td');
+		
+	if (param == 'update') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('изменить');
+		$('#dialog_button').text('изменить');
+		$('#title').val($(td[1]).text());
+		$('#process').val($(td[2]).attr('process'));
+		$('#active').prop('checked', Boolean(Number($(td[3]).attr('active'))));
+		$('#sortby').val(Number(($(td[4]).text())));
+		
+	} else if (param == 'insert') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('добавить');
+		$('#dialog_button').text('добавить');
+		
+	} else {
+		$('#dialog_form').html($('#delete_form').html());
+		$('#dialog_button').text('удалить');
+		$('#dialog_title').text('удалить');
+		$('#delete_title').text($(td[1]).text())  
+	}
+	$('#Dialog').modal()
+}
+
+function send(elm, idDialog) {
+	var title = $('#title').val();
+	var process = $('#process').val();
+	console.log(process);
+	if (columns['cmd'] != 'delete') {
+		if (!title || !process){
+			return
+		}
+	}
+	columns['title'] =  $.trim(title);
+	columns['process'] =  process;
+	columns['active'] = Number($('#active').prop('checked'));
+	columns['sortby'] = $('#sortby').val();
+	$(idDialog).modal('toggle');
+
+	$.ajax({
+        url: '/cifra/category',
+        data: columns,
+		type: 'POST',
+        dataType: 'HTML',
+        success: function(res) {
+			$('#mainFrame').html(res);
+        },
+        error: function(error) {
+            console.log(error);			
+        }		
+    });}
+
+</script>
+{% endblock %}

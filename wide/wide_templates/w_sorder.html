@@ -1,0 +1,160 @@
+{% extends "w_layout.html" %}
+{% import 'w_base.html' as base %}
+{% import 'w_material_filter.html' as f %}
+
+{% macro table(orders) -%}
+<table class="table table-sm table-striped">
+	<thead>
+	<tr>
+		{% if session['wide_admin'] %}
+			<th>id</th>
+		{% endif %}	
+		<th>заказ</th>
+		<th>создан</th>
+		<th>закрыт</th>
+		<th>кто</th>
+		<th>выполнен</th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for order in orders %}
+		{% set nameList = order.user.title.split(' ') %}
+		<tr data_id="{{order.id}}">
+			{% if session['wide_admin'] %}
+				<th>{{order.id}}</th>
+			{% endif %}	
+			<td> <a href="/wide/sorder?id={{order.id}}">{{order}}</a></td>
+			<td>{{order.timeopen.strftime('%d-%m-%y %H:%M')}}</td>
+			<td>
+				{% if order.timeclose %}
+					{{order.timeclose.strftime('%d-%m-%y %H:%M')}}
+				{% else %}
+					-
+				{% endif %}	
+				
+			</td>
+			<td>{{order.user}}</td>
+			{% if order.status == 0%}
+				<td>
+					<h5>&#10005;
+						{% if session['wide_admin'] %}
+							<span class='c1' onclick="send(this, {{order.id}}, 'close')" title="закрыть"> &#10004; </span>
+						{% endif %}	
+					</h5>
+				</td>
+			{% else %}
+				<td>&#10004;</td>
+			{% endif %}	
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+{%- endmacro %}
+
+{% macro mainFrame(orders, categories) -%}
+<div class="container">
+	<div class="row">
+		<div class="col">
+			<div  style="height: 30px;">{{base.flashed()}}</div>
+			
+			{{f.filter(categories)}}
+			
+			<div id="table">{{table(orders)}}</div>
+				
+		</div>
+	</div>
+</div>
+{%- endmacro %}
+
+
+{% block main %}
+
+<div id="mainFrame">
+	{{mainFrame(orders, categories)}}
+</div>
+
+
+{{base.dialog()}}
+
+<script>
+
+function send(elm, id, cmd) {
+	$.ajax({
+		url: '/wide/sorder',
+		data: {cmd:cmd, order_id:id},
+		type: 'POST',
+		dataType: 'HTML',
+		success: function(res) {
+			$('#table').html(res);
+		},
+		error: function(error) {
+			console.log(error);
+		}
+	});
+}
+
+function filterByCategory() {
+	var id = $('#category_id').val();
+	if (id == 0) {
+		$("body").load('/wide/sorder');
+	}
+	$.ajax({
+		url: '/wide/data',
+		data: {cmd:'orders_category', category_id:id},
+		type: 'POST',
+		dataType: 'HTML',
+		success: function(res) {
+			$('#table').html(res);
+		},
+		error: function(error) {
+			console.log(error);
+		}
+	});
+};
+
+function filterByMaterialTitle() {
+	console.log($('#material_title').val());
+	if ($('#material_title').val() == -1) {
+		filterByCategory();
+		return;
+	}
+	
+	var material = $("#material_title option:selected").html();
+	$.ajax({
+		url: '/wide/data',
+		data: {cmd:'orders_materialtitle', material_title:material},
+		type: 'POST',
+		dataType: 'HTML',
+		success: function(res) {
+			$('#table').html(res);
+		},
+		error: function(error) {
+			console.log(error);
+		}
+	});
+};
+
+function filterByMaterial() {
+	var id = $('#material_id').val();
+	if (id == 0) {
+		filterByMaterialTitle();
+		return
+	}
+	$.ajax({
+		url: '/wide/data',
+		data: {cmd:'orders_material', material_id:id},
+		type: 'POST',
+		dataType: 'HTML',
+		success: function(res) {
+			$('#table').html(res);
+		},
+		error: function(error) {
+			console.log(error);
+		}
+	});
+};
+
+
+
+</script>
+{% endblock %}

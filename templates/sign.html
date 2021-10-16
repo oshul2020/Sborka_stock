@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block search %}
+	<div class="input-group">
+		<input type="text" class="form-control" placeholder="Поиск в shira" name="q">  
+		<input type="hidden" name="where" value="shira">
+		<button type="submit" class="btn btn-dark">&#x1F50D;</button>
+	</div>
+{% endblock %}
+
+{% block sign %}
+		<form class="form-inline" id="signForm" method="post" action="sign">
+		<div class="input-group ">
+			<input type="text" class="form-control mr-1" placeholder="Добавить к подписи" name="add">
+		</div>
+		<button type="submit" class="btn btn-primary mr-4">Подписать</button>
+	</form>
+{% endblock %}
+
+{% block main %}
+	<h3>  Всего {{ data.__len__() }} файлов</h3>
+	<form id="signForm">
+		{% for file in data %}
+		<div id="name">
+		<div class="input-group">
+			{% if file.suffix == '.tif' %}
+				<input class="form-check-input" type="checkbox" name="files" 
+					value= {{file | urlencode}}  form="signForm">		
+			{% else %}
+				<input class="form-check-input" type="checkbox" disabled>
+			{% endif %}	
+			
+			<a class="file" href="info?file={{ file | urlencode }} ">{{ file.name }}</a>
+				&nbsp
+				<b>{{ file.stat().st_size | filesizeformat }}</b> 
+		</div>
+		</div>
+		{% endfor %}
+	</form>	
+{% endblock %}

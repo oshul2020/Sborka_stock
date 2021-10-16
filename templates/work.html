@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block search %}
+	<div class="input-group">
+		<input type="text" class="form-control" placeholder="Поиск в work" name="q">  
+		<input type="hidden" name="where" value="work">
+		<button type="submit" class="btn btn-dark">&#x1F50D;</button>
+	</div>
+{% endblock %}
+
+{% macro fileInfo(file) %}
+	<div id='file'>
+		<a href="info?file={{ file.path | urlencode }} ">
+			{{ file.path.name }}</a>
+		&nbsp
+		<b>{{ file.path.stat().st_size | filesizeformat }}</b> 
+		<span id="debug">( {{ file.copies }}, {{ file.dimention }} )</span>
+	</div>
+{% endmacro %}
+
+{% block main %}
+	<h3> Сборки в работе </h3>
+	{% for day in works %}
+		<p id="work">{{ day.date }}    (заданий: {{ day.amount }} / готово: {{ day.ready }})</p> 
+		{% for quality in day.qualities %}
+			<p id="quality">{{ quality.name }} (заданий: {{ quality.amount }}   
+				&nbsp; &nbsp; размер: {{ (quality.totalSize / 1000000) | round(2, 'floor') }} кв.м.)</p>
+			<table>
+			{% for item in quality.materials %}
+				{% set material = quality.materials[item] %}
+				<tr>
+				<td></td>
+				<td></td>
+				<td id="material">[{{ material.name }}] {{ material.description}} &nbsp; &nbsp; (заданий: {{ material.getAmount() }}  размер: {{ (material.getSize() / 1000000) | round(2, 'floor') }} кв.м)</td>
+				</tr>
+				{% for group in material.groups %}
+					{% set files = group.files.__len__() %}
+					<tr>
+						<td id="td_status">
+							{% if not group.orderStatus%}
+								<span id="warn">&#9888;</span>
+							{% endif %}
+						</td>
+						<td id="td_status">
+							{% if group.isPrintToday%}
+								<span id="warn">&#x25BA;</span>
+							{% endif %}
+						</td>
+						<td>
+							{% if files == 1 %}	{# group have only 1 file#}
+								 {{ fileInfo(group.files[0]) }}
+							{% else %}
+								<span id="file">
+									{{ group.name }} (заданий: {{ files }}  размер: {{ (group.totalSize / 1000000) | round(2, 'floor') }} кв.м)
+								</span>
+								</td>
+								{% for file in group.files %}
+									<tr>
+										<td></td><td></td>
+										<td id="td_group">
+											{{ fileInfo(file) }}
+										</td>	
+									</tr>
+								{% endfor %}
+							{% endif %}	
+						</td>
+					</tr>		
+				{% endfor %}
+				</tr>
+			{% endfor %}	
+			</table>
+		{% endfor %}
+	{% endfor %}
+{% endblock %}

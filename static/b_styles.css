@@ -1,0 +1,191 @@
+.b_cancel {
+	background-color: #ffd4d4  !important;
+}
+
+.b_mainframe {
+	width: 600px;
+	margin: auto;
+}
+
+.u_container {
+	height: 30px;
+	background-color: #ededed;
+	content: "";
+	clear: left;
+	display: table;
+	float: left;
+	padding: 4px;
+	margin-bottom: 7px;
+	filter: drop-shadow(1px 1px 1px rgb(61, 61, 92));
+}
+
+.u_title {
+	font-size: 18px;
+}
+
+.u_account {
+	width: 40px;
+	font-weight: bold;
+	color: red;
+	font-size: 25px;
+}
+
+.w_container {
+	height: 50px;
+	background-color: #ededed;
+	content: "";
+	clear: left;
+	display: table;
+	float: left;
+	padding: 4px;
+	margin-bottom: 5px;
+}
+
+.w_info  {
+	width: 100%;
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.w_title {
+	font-size: 18px;
+	border-bottom: 1px solid;   
+	border-color: #607D8D;
+}
+
+.w_stop {
+	font-size: 13px;
+}
+
+.w_cmd {
+	float: right;
+	display: table;
+	vertical-align: middle;
+	text-align: center;
+	margin-left: 20px;
+	color: #607D8D;
+} 	
+	
+.w_cancel {
+	font-size: 35px;
+}
+
+.w_message {
+	font-size: 15px;
+	color: red;
+}	
+
+	.route {
+	background-color: #ededed;
+	content: "";
+	clear: left;
+	display: flex;
+	margin-bottom: 2px;
+}
+
+.route .number {
+	float: left;
+	font-size: 50px;
+	background-color: #607D8D;
+	margin: 3px;
+	padding: 0 5px;
+	border-radius: 5px;
+	text-align: center; 
+}
+
+.number .id {
+	text-align: center;
+	color: #fff;
+}
+
+.route .info {
+	width: 100%;
+	display: table-cell;
+	vertical-align: middle;
+	padding: 0 10px 0 10px;
+}
+
+.route .title {
+	font-size: 50px;
+	border-bottom: 2px solid;   
+	border-color: #607D8D;
+} 
+
+.route .days {
+	font-size: 20px;
+}      
+
+.date {
+	float: right;
+	width: auto;
+	margin: 3px;
+	border-radius: 5px;
+	text-align: center;
+	background-color: #607D8D;
+	vertical-align: middle;
+	padding: 0 5px;
+}
+
+.time {
+	text-align: center;
+	color: #fff;
+}
+
+.time_open {
+	font-size: 20px;
+	display:inline-block;
+}
+
+.time_start {
+	font-weight: bold;
+	font-size: 40px;
+	display:inline-block;
+}
+
+.time_close {
+	 display:inline-block;
+	font-size: 20px;
+}
+
+.setup_container{
+	height: auto;
+	display: none;
+	padding: 2px;
+}
+
+@media screen and (max-width:640px) {
+	.b_mainframe {
+		width: 100%;
+	}
+
+	.route .info {
+		padding: 0 5px 0 5px;
+	}
+	.route .number {
+		font-size: 20px;
+	}
+	.route .title {
+		font-size: 30px;
+	}
+	.route .days {
+		font-size: 15px;
+	}	 
+
+	.time_open {
+		font-size: 15px;
+
+	}
+
+	.time_start {
+		font-size: 25px;
+	}
+	
+	.time_close {
+		font-size: 15px;
+
+	}
+
+	.setup_container {
+		height: auto;
+	}
+}

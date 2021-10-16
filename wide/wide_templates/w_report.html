@@ -1,0 +1,84 @@
+{% extends "w_layout.html" %}
+{% import 'w_base.html' as base %}
+
+{% macro table(materials) -%}
+<table class="table table-sm table-striped" id="writeOffTable">
+	<thead>
+	<tr>
+		{% if session['wide_admin']%}
+			<th>id</th>
+		{% else %}	
+				<td style="display:none">id</td>	
+		{% endif %}	
+		<th>категория</th>
+		<th>символ</th>
+		<th>материал</th>
+		<th class="text-right">размер</th>
+		<th class="text-right">списано</th>
+		<th class="text-left">ед.</th>
+		<th class="text-right">остаток</th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for id, data in materials.items() %}
+		<tr>
+			{% if session['wide_admin']%}
+				<td>{{ data['entity'].id }}</td>
+			{% else %}	
+				<td style="display:none">{{ data['entity'].id }}</td>
+			{% endif %}	
+			<td>{{ data['entity'].category.title }}</td>
+			<td>{{ data['entity'].symbol.title }} </td>
+			<td>{{ data['entity'].title }} </td>
+			<td class="text-right">{{ data['entity'].size.title }}</td>
+			<td class="text-right">{{ data['amount'] }}</td>
+			<td class="text-left">{{ data['entity'].unit.title }}</td>
+			<td class="text-right">{{ data['entity'].amount }}</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>	
+{%- endmacro %}
+
+{% macro mainFrame(materials) -%}
+<div class="container">
+	<h5>списано начиная с: {{date.strftime('%H:%M %d-%m-%Y')}} &nbsp; &nbsp; (склад широкоформатной печати)</h5>
+	<div class="row">
+		<div class="col">
+			<div class="row mb-2">
+				<div class="col"></div>
+				<div class="col"></div>
+			</div>
+			
+			<div id="tableFrame">{{table(materials)}}</div>
+		</div>
+		
+	</div>
+</div>
+{%- endmacro %}
+
+
+{% block main %}
+<div id="mainFrame">
+	{{mainFrame(materials)}}
+</div>
+
+<style type="text/css">
+	.table td, .table th {
+		padding: .25rem;
+		font-size: 1rem;
+	}
+</style>	
+	
+<script>
+
+$(writeOffTable).DataTable({
+	paging: false,
+	"info": false,
+	searching: false,
+	"order": [[ 5, "desc" ]],
+	"language": {"zeroRecords": "нет записей",}
+	});
+
+</script>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% macro stat_material_table(title, data, header) -%}
+	<h5 class="font-weight-bold">{{title}}</h5>
+	<table class="table table-sm table-striped">
+	<thead>
+	<tr class="text-right">
+		<th class="text-left">размер</th>
+		<th>{{header[0]}}</th>
+		<th>{{header[1]}}</th>
+		<th>{{header[2]}}</th>
+		<th>{{header[3]}}</th>
+		<th>{{header[4]}}</th>
+		<th>{{header[5]}}</th>
+	</tr>
+	</thead>
+		{% for m in data%}
+			<tr class="text-right">
+				<td class="text-left">{{m.size}}</td>
+				<td>{{data[m][0]}}</td>
+				<td>{{data[m][1]}}</td>
+				<td>{{data[m][2]}}</td>
+				<td>{{data[m][3]}}</td>
+				<td>{{data[m][4]}}</td>
+				<td>{{data[m][5]}}</td>
+			</tr>	
+		{% endfor %}
+		
+	</table>
+{%- endmacro %}
+
+{% macro stat_size_table(title, data) -%}
+	<h5 class="font-weight-bold">{{title}}</h5>
+	<table class="table table-sm">
+	<thead>
+	<tr class="text-right table-active">
+		<th class="text-left">месяц</th>
+		<th>неделя</th>
+		<th>количество</th>
+		<th>всего</th>
+	</tr>
+	</thead>
+		{% for month in data%}
+			{% set total = data[month][0] %}
+			{% set weeks = data[month][1] %}
+				{% for week in weeks%}
+					{% if loop.index0 == 0%}
+						<tr class="text-right" style="border-top: 2px solid; border-top-color: #8f8f8f;">	
+						<td class="align-middle text-left" rowspan="{{weeks|length}}">{{month}}</td>
+					{% else %}
+						<tr class="text-right">	
+					{% endif %}	
+					<td>{{week}}</td>
+					<td>{{weeks[week]}}</td>
+					{% if loop.index0 == 0%}
+						<td class="align-middle" rowspan="{{weeks|length}}">{{total}}</td>
+					{% endif %}	
+				</tr>
+				{% endfor %}
+		{% endfor %}
+		
+	</table>
+{%- endmacro %}
+
+{% macro stat_form() -%}
+<form class="form" id="stat_form">
+	<div class="row my-2">
+		<div class="col" id="stat_data">
+			<div class="row justify-content-center">
+				<image src="/static/loading.gif" style="width:100px;height:100px;">
+			</div>
+			
+		</div>
+	</div>	
+</form>
+{%- endmacro %}
+
+
+<div style="display:none">
+	{{stat_form()}}
+</div>	
+
+<script>
+
+function GetData(callback, url, data, type, dataType) {
+	$.ajax({
+		url: url,
+		data: data,
+		type: type,
+		dataType: dataType,
+		success: callback,
+		error: function(error) {
+			console.log(error);
+		}
+	});
+}
+
+function statCallback(res) {
+	$('#stat_data').html(res);
+}
+
+function StatDialog(id, cmd){
+	console.log('dialog');
+	$('#dialog_title').text('статистка (списание)');
+	$('#dialog_form').html($('#stat_form').html());
+	$('#stat_dialog_button').text('ОК');
+	GetData(statCallback, '/wide/stat', {'cmd':cmd, 'material_id':id}, 'POST', 'HTML');
+	$('#Dialog').modal('show')
+};
+
+function onStatDialogSubmit() {
+	$('#Dialog').modal('toggle');
+}
+
+</script>

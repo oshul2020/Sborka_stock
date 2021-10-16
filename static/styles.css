@@ -1,0 +1,143 @@
+.c1 {cursor: pointer; cursor: hand;}
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+.thumb {
+  background: url('loading.gif') no-repeat;
+  background-position: center; 
+}
+#sign {
+	position: relative;
+	top: 6px;
+	font-size: 2.5em;
+	line-height: 50%;
+	text-decoration: none;
+	color: red;
+}
+.col-table {
+	overflow: auto; 
+	height: 600px !important;
+}
+.card-header {
+	background-color: #cccccc;
+}
+
+#work {
+	font-family: monospace;
+	font-size: 1.3em;
+	font-weight: bold;
+	margin: 0px;
+	margin-top: 10px;
+	padding-left: 10px;
+	background-color: #D0D0D0;
+}
+
+#quality {
+	font-family: monospace;
+	font-size: 1.2em;
+	font-weight: bold;
+	margin: 0px;
+	margin-top: 5px;
+	margin-left: 20px;
+}
+
+#material {
+	font-family: monospace;
+	font-size: 1em;
+	font-weight: bold;
+	margin: 0px;
+	padding-left: 5px;
+	background-color: #EFEEEE;
+}
+
+#td_group {
+	padding-left: 40px;
+}
+
+#tr_material {
+	background-color: #bde9ba;
+}
+
+#file {
+	font-family: monospace;
+	font-size: 1em;
+	padding-left: 30px;
+}
+#online {
+	position:relative;
+	font-family: monospace;
+	font-size: 2em;
+	color: green;
+	margin-right: 10px;
+    top:-5px;
+}
+#td_status {
+	 width: 20px;
+	font-family: monospace;
+	font-size: 1.1em;
+	font-weight: bold;
+	color: red;
+}
+#name {
+	font-family: monospace;
+	font-size: 1em;
+	margin: 0px;
+	margin-left: 40px;
+}
+
+.blended_grid{
+	display : block;
+	width : 900px;
+	overflow : auto;
+	margin : 0px auto 0 auto;
+}
+.pageHeader{
+	background-color : rgba(0, 0, 0, 0);
+	float : left;
+	clear : none;
+	height : 50px;
+	width : 900px;
+}
+.pageContent{
+	background-color : rgba(0, 0, 0, 0);
+	float : left;
+	clear : none;
+	height : 600px;
+	width : 900px;
+}
+.pageFooter{
+	background-color : rgba(0, 0, 0, 0);
+	float : left;
+	clear : none;
+	height : 50px;
+	width : 900px;
+}
+
+#debug {
+	font-family: monospace;
+	font-size: 1em;
+	color: lightgray;
+}
+
+.dropdown-menu .dropdown-menu {
+    top: auto;
+    left: 100%;
+    transform: translateY(-2rem);
+}
+.dropdown-item + .dropdown-menu {
+    display: block;
+    opacity: 0;
+    transition: opacity .3s 1s;
+}
+.dropdown-item.submenu::after {
+    content: '▸';
+    margin-left: 0.5rem;
+}
+.dropdown-item:hover + .dropdown-menu,
+.dropdown-menu:hover {
+    opacity: 1;
+    transition: opacity .3s .1s;
+}

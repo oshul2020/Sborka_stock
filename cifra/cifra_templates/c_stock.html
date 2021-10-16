@@ -1,0 +1,266 @@
+{% extends "c_layout.html" %}
+{% import 'c_base.html' as base %}
+
+{% macro contextMenu(entity) -%}
+<div class="dropdown dropleft">
+  <button class="btn btn-sm" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    &#128315;
+  </button>
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+    <a class="dropdown-item" href="#" data-toggle="modal" onclick="dialog(this, {{entity.id}}, 'writeOff')">списать</a>
+	<a class="dropdown-item" href="#" data-toggle="modal" onclick="dialog(this, {{entity.id}}, 'add')">принять</a> 
+				
+	
+		<div class="dropdown-divider"></div>
+		<a class="dropdown-item" href="#" data-toggle="modal" onclick="dialog(this, {{entity.id}}, 'update')">изменить</a> 
+		
+	
+  </div>
+</div>
+{%- endmacro %}
+
+{% macro form() -%}
+<form class="form" id="entity_form">
+	<h5 class="font-weight-bold" id="title"></h5>
+	<div class="row my-2">
+		<div class="col">
+			<textarea class="form-control" cols="100" rows="2" id="info" placeholder="Инфо"></textarea>
+		</div>
+	</div>	
+	<div class="row">
+		<div class="col-2">
+			<input  class="form-control" type="number" id="amount" 
+				value="1" min="0" max="300" step="1"/>
+		</div>
+		<div class="col-2">
+				<h5 class="font-weight-bold pt-2" id="unit"></h5>	
+		</div>
+		<div class="col">
+			<button type="button" class="btn btn-primary m-2 float-right"
+					id="dialog_button" onclick="send(this, '#Dialog')"></button>
+		</div>
+	</div>
+</form>
+{%- endmacro %}
+
+{% macro rows(entity) -%}
+	<td style="width: 50px;">
+		{% if session['cifra_user'] and session['cifra_user'].title == 'admin' %}
+			{{entity.id}}
+		{%endif%}
+
+	</td>
+	<td class="c1" style="width: 300px;" onclick="StatDialog({{entity.id}}, 'material')">
+		{{entity.size}}
+	</td>
+	<td style="width: 100px;">{{entity.amount}}</td>
+	<td>{{entity.unit.title}}</td>
+	<td>
+		{% if session['cifra_user'] %}
+			{{contextMenu(entity)}}
+		{%endif%}	
+	</td>
+{%- endmacro %}
+
+{% macro new_table(data, category_id) -%}
+	<div class="row">
+	<div class="col mx-4">
+	<table class="table table-sm" id="stockTable">
+	<thead>
+		<tr></tr>
+	</thead>
+		{% for title, materials in data.items() %}
+			{% if materials[0].amount <= materials[0].minimum %}	
+				<tr class="table-danger" style="border-top: 2px solid;">
+			{% else %}	
+				<tr style="border-top: 2px solid;">
+			{% endif %}	
+				<td class="c1" style="width: 300px;" rowspan="{{materials|length}}"	
+					onclick="StatDialog({{materials[0].id}}, 'density')">
+					{{title}}
+				</td>
+					{{ rows(materials[0])}}
+				</tr>
+			{% for material in materials[1:] %}
+				{% if material.amount <= material.minimum %}	
+					<tr class = "table-danger">
+				{% else %}	
+					<tr>
+				{% endif %}	
+					{{ rows(material)}}
+				</tr>
+			{% endfor %}			
+		{% endfor %}			
+	
+	</table>
+	</div>
+	</div>
+{%- endmacro %}
+
+{% macro proc() -%}
+	<ul class="nav nav-tabs mb-2">
+			
+	{% for p in processes%}
+		<li class="nav-item">
+		{% if loop.index0 == 0%}
+			<a class="nav-link active" data-toggle="tab" href="#" onclick="getCategories({{loop.index0}})">{{p}}</a>
+		{% else %}
+			<a class="nav-link" data-toggle="tab" href="#" onclick="getCategories({{loop.index0}})">{{p}}</a>
+		{% endif %}	
+		</li>
+	{% endfor %}
+	</ul>
+{%- endmacro %}	
+
+
+{% macro tab(categories) -%}
+	{% for category in  categories %}
+		<div class="h5 text-white bg-secondary c1 p-2 rounded-lg" 
+				onclick="getMaterials(this, {{ category.id }})" is_open=0 id="category_{{category.id}}">
+			{% if session['cifra_user'] and session['cifra_user'].title == 'admin' %}
+				{{ category.id }}
+			{%endif%}	
+			&nbsp;&nbsp;	{{ category.title }}
+		</div>
+		<div id="block_{{category.id}}"></div>
+	{% endfor %}
+	
+
+	
+{%- endmacro %}
+
+{% block main %}
+  <style type="text/css">
+
+	.nav-tabs .nav-item .nav-link.active {
+		background-color: var(--secondary);
+		color: var(--white);
+		border-bottom: 0px solid var(--secondary);
+	  
+	}
+	.nav-tabs{
+		border-bottom: 2px solid var(--secondary);
+	}
+
+  </style>
+
+ <div class="container">
+	<div class="row">
+		<div class="col-1"></div>
+		<div class="col">
+			<div  style="height: 30px;" id="flash">{{base.flashed()}}</div>
+			{{proc()}}
+			<div id="mainFrame">{{tab(categories)}}</div>
+		</div>
+		<div class="col-1"></div>
+	</div>
+</div> 
+
+{{base.dialog()}}
+
+<div style="display:none">
+	{{form()}}
+</div>	
+
+{% include 'c_stat.html' %}
+
+<script>
+var columns = {};
+
+function setMaterial(res) {
+	columns['category_id'] = res['category']['id']
+	$('#title').text(res['category']['title'] + ' ' + res['title'] +  ' ' + res['size']['title'] )
+	$('#unit').text(res['unit']['title'])
+	$('#dialog_button').prop('disabled', false);
+}
+
+function flash(html) {
+	$('#flash').append(html)
+	setTimeout(function(){$('#flash').text('');}, 5000);
+}
+
+function dialog(elm, id, param) {
+	columns["cmd"] = param
+	columns["id"] = id
+	
+	if (param == 'add') {
+		$('#dialog_title').text('принять на главный склад');
+
+	} else if (param == 'writeOff') {
+		$('#dialog_title').text('списать со склада');
+	} else if (param == 'update') {
+		$('#dialog_title').text('изменить количество на складе');
+	}
+	$('#dialog_form').html($('#entity_form').html());
+	$('#dialog_button').text('подтвердить');
+	$('#dialog_button').prop('disabled', true);
+	GetData(setMaterial, '/cifra/data', {'cmd':'info', 'entity':'Material', 'id':id}, 'GET', 'json');
+	$('#Dialog').modal('show')
+}
+
+function send(elm, idDialog) {
+	var amount = $('#amount').val();
+	
+	columns['amount'] =  $('#amount').val();
+	columns['info'] =  $('#info').val();
+	$(idDialog).modal('toggle');
+
+	$.ajax({
+        url: '/cifra/stock',
+        data: columns,
+		type: 'POST',
+        dataType: 'json',
+        success: function(res) {
+			var id="#block_" + columns['category_id'];
+			$(id).html(res[0]);
+			flash(res[1]);
+        },
+        error: function(error) {
+			flash(error.responseText)
+        }		
+    });}
+
+function getMaterials(elm, category_id) {
+	var id="#block_" + category_id;
+	var is_open = $(elm).attr('is_open');
+	if (is_open == 0) {
+		$.ajax({
+			url: '/cifra/data',
+			data: {'cmd':'materials','category_id':category_id},
+			type: 'GET',
+			dataType: 'HTML',
+			success: function (res) {
+				$(id).html(res);
+				$(elm).attr('is_open', 1);
+			},
+        error: function(error) {
+            console.log(error);			
+        }		
+    });
+		
+	} else {
+		$(id).html('');
+		$(elm).attr('is_open', 0);
+	};
+}
+
+function getCategories(process) {
+	
+	$.ajax({
+		url: '/cifra',
+		data: {'process':process},
+		type: 'GET',
+		dataType: 'HTML',
+		success: function (res) {
+			$('#mainFrame').html(res);
+		},
+		error: function(error) {
+			console.log(error);			
+		}		
+	});
+}
+
+	
+</script>
+
+{% endblock %}

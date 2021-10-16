@@ -1,0 +1,113 @@
+{% extends "c_layout.html" %}
+{% import 'c_base.html' as base %}
+
+{% macro form() -%}
+<form class="form" id="entity_form">
+	<input type="text" class="form-control" id="title" placeholder="название">
+	<div class="col"></div>
+		<button type="button" class="btn btn-primary m-2 float-right"
+			id="dialog_button" onclick="send(this, '#Dialog')"></button>
+</form>
+{% endmacro %}
+
+{% macro table(units) -%}
+	<table class="table table-sm table-striped">
+	<tr>
+		<th>id</th>
+		<th>название</th>
+		<th></th><th></th>
+	</tr>
+		{% for unit in units %}
+			<tr>
+				<td>{{ unit.id }}</td>
+				<td>{{ unit.title }}</td>
+				{{ base.command(unit.id) }}
+			</tr>
+		{% endfor %}
+	</table>	
+{%- endmacro %}
+
+{% macro mainFrame(units) -%}
+<div class="container">
+	<div class="row">
+		<div class="col"></div>
+		<div class="col-5">
+			<div  style="height: 30px;">{{base.flashed()}}</div>
+			<label>единицы  </label>&nbsp;&nbsp;
+			{{base.command(0)}}
+			{{table(units)}}
+		</div>
+		<div class="col"></div>
+	</div>
+</div>
+{%- endmacro %}
+
+
+{% block main %}
+<div id="mainFrame">
+	{{mainFrame(units)}}
+</div>
+
+{{base.dialog()}}
+
+<div style="display:none">
+	{{form()}}
+	{{base.delete_form()}}
+</div>	
+	
+<script>
+var columns = {};
+
+function dialog(elm, id, param) {
+	columns["cmd"] = param
+	columns["id"] = id
+	
+	var tr = $(elm).parent();
+	var td = tr.find('td');
+		
+	if (param == 'update') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('изменить');
+		$('#dialog_button').text('изменить');
+		$('#title').val($(td[1]).text());
+		
+	} else if (param == 'insert') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('добавить');
+		$('#dialog_button').text('добавить');
+		
+	} else {
+		$('#dialog_form').html($('#delete_form').html());
+		$('#dialog_button').text('удалить');
+		$('#dialog_title').text('удалить');
+		$('#delete_title').text($(td[1]).text())  
+	}
+	$('#Dialog').modal()
+}
+
+function send(elm, idDialog) {
+	var title = $('#title').val();
+	
+	if (columns['cmd'] != 'delete') {
+		if (!title){
+			return
+		}
+	}
+	columns['title'] =  $.trim(title);
+	$(idDialog).modal('toggle');
+
+	$.ajax({
+        url: '/cifra/unit',
+        data: columns,
+		type: 'POST',
+        dataType: 'HTML',
+        success: function(res) {
+			$('#mainFrame').html(res);
+        },
+        error: function(error) {
+            console.log(error);			
+        }		
+    });}
+
+</script>
+{% endblock %}

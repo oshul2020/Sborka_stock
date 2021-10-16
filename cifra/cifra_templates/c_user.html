@@ -1,0 +1,149 @@
+{% extends "c_layout.html" %}
+{% import 'c_base.html' as base %}
+
+{% macro form() -%}
+<form class="form" id="entity_form">
+	<div class="row">
+		<div class="col m-2">
+			<input type="text" class="form-control" id="title" placeholder="имя">
+		</div>
+		<div class="col m-2">		
+			<input type="password" id="password" class="form-control" 
+				placeholder='пароль'>
+		</div>
+		<div class="col m-2">			
+			<input class="form-check-input mt-3" id="admin" type="checkbox" value="1">
+			<label class="form-check-label m-2">администратор</label>
+		</div>
+	</div>
+		<button type="button" class="btn btn-primary m-2 float-right"
+			id="dialog_button" onclick="send(this, '#Dialog')"></button>
+</form>
+{% endmacro %}
+
+{% macro delete_form() -%}
+<form class="form" id="delete_form">
+	<label class="m-2" id="delete_title"></label>
+	<button type="button" class="btn btn-primary m-2 float-right"
+			id="dialog_button" onclick="send(this, '#Dialog')"></button>
+</form>
+{% endmacro %}
+
+{% macro table(users) -%}
+<table class="table table-sm table-striped">
+	<tr>
+		<th>id</th>
+		<th>имя</th>
+		<th>админ</th>
+		<th></th><th></th>
+	</tr>
+	{% for user in users %}
+		<tr>
+			<td>{{ user.id }} </td>
+			<td>{{ user.title }} </td>
+			<td admin="{{user.admin}}" >
+				{% if user.admin == 1 %}
+					Да
+				{% else %}	
+					Нет
+				{% endif %}	
+			</td>
+			{{ base.command(user.id) }}
+		</tr>
+	{% endfor %}
+</table>	
+{%- endmacro %}
+
+{% macro mainFrame(users) -%}
+<div class="container">
+	<div class="row">
+		<div class="col"></div>
+		<div class="col-5">
+			<div  style="height: 30px;">{{base.flashed()}}</div>
+			<label>пользователи  </label>&nbsp;&nbsp;
+			{{base.command(0)}}
+			{{table(users)}}
+		</div>
+		<div class="col"></div>
+	</div>
+</div>
+{%- endmacro %}
+
+
+{% block main %}
+<div id="mainFrame">
+	{{mainFrame(users)}}
+</div>
+
+{{base.dialog()}}
+
+<div style="display:none">
+	{{form()}}
+	{{delete_form()}}
+</div>	
+	
+<script>
+var columns = {};
+
+function dialog(elm, id, param) {
+	columns["cmd"] = param
+	columns["id"] = id
+
+		
+	var tr = $(elm).parent();
+	var td = tr.find('td');
+		
+	if (param == 'update') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('изменить');
+		$('#dialog_button').text('изменить');
+		$('#title').val($(td[1]).text());
+		$('#admin').prop('checked', Number($(td[2]).attr('admin')));
+		
+	} else if (param == 'insert') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('добавить');
+		$('#dialog_button').text('добавить');
+		$('#title').attr("placeholder","имя").val("").focus().blur();
+		$('#password').attr("placeholder","пароль").val("").focus().blur();
+		$('#admin').prop('checked', 0);
+		
+	} else {
+		$('#dialog_form').html($('#delete_form').html());
+		$('#dialog_button').text('удалить');
+		$('#dialog_title').text('удалить');
+		$('#delete_title').text($(td[1]).text()) 
+		
+	}
+	$('#Dialog').modal()
+}
+
+function send(elm, idDialog) {
+	var title = $('#title').val();
+	var password = $('#password').val();
+	
+	if (columns['cmd'] != 'delete') {
+		if (!title || !password){
+			return
+		}
+	}
+	columns['title'] = title;
+	columns['hash'] = md5($('#password').val());
+	columns['admin'] = Number($('#admin').prop('checked'));
+	$(idDialog).modal('toggle');
+
+	$.ajax({
+        url: '/cifra/user',
+        data: columns,
+		type: 'POST',
+        dataType: 'HTML',
+        success: function(res) {
+			$('#mainFrame').html(res);
+        },
+        error: function(error) {
+            console.log(error);			
+        }		
+    });}
+
+</script>
+{% endblock %}

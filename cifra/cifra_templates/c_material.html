@@ -1,0 +1,250 @@
+{% extends "c_layout.html" %}
+{% import 'c_base.html' as base %}
+
+&sup2;
+
+{% macro form() -%}
+<form class="form" id="entity_form">
+		<div class="row">
+			<div class="col">
+
+				<select class="custom-select m-2" id="category_id" onchange="">
+					<option disabled selected value="0">категория...</option>
+					{% for category in categories %}
+						<option value="{{category.id}}">{{category.title}}</option>
+					{% endfor %}
+				</select>
+
+			</div>
+			<div class="col">
+				<select class="custom-select m-2" id="density_id" onchange="DensitySelect(this)">
+					<option disabled selected value="0">плотность...</option>
+					{% for density in densities %}
+						<option value="{{density.id}}">{{density | pprint}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="col">
+				<select class="custom-select m-2" id="size_id" onchange="">
+					<option disabled selected value="0">формат...</option>
+					{% for size in sizes %}
+						<option value="{{size.id}}">{{size | pprint}}</option>
+					{% endfor %}
+				</select>
+			</div>
+			
+		</div>
+		<div class="row">
+			<div class="col">
+				<input type="text" class="form-control m-2"	id="title" placeholder="название">
+			</div>
+			<div class="col-3">
+					<select class="custom-select m-2" id="unit_id" onchange="">
+						<option disabled selected value="0">единицы...</option>
+						{% for unit in units %}
+							<option value="{{unit.id}}">{{unit.title}}</option>
+						{% endfor %}	
+					</select>
+			</div>
+			<div class="col">
+				<div class="form-check m-3">
+					<input type="checkbox" class="form-check-input" id="active">
+					<label class="form-check-label" for="active">отображать на складе</label>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<span class="pl-4 pt-3">минимальный остаток</span>
+			<div class="col-2">
+				<input  class="form-control m-2" type="number" id="minimum" 
+					value="1" min="1" step="1"/>
+			</div>
+			<span class="pt-3">единиц</span>
+			<div class="col"></div>
+		</div>
+		<div class="row">	
+			<div class="col-3"></div>
+		</div>
+		<button type="button" class="btn btn-primary m-2 float-right"
+			id="dialog_button" onclick="send(this, '#Dialog')"></button>
+</form>
+{% endmacro %}
+
+{% macro delete_form() -%}
+<form class="form" id="delete_form">
+	<label class="m-2" id="delete_title"></label>
+	<button type="button" class="btn btn-primary m-2 float-right"
+			id="dialog_button" onclick="send(this, '#Dialog')"></button>
+</form>
+{% endmacro %}
+
+{% macro table(materials) -%}
+<table class="table table-sm table-striped" id="materialTable">
+	<thead>
+		<tr>
+			<th>id</th>
+			<th>категория</th>
+			<th>название</th>
+			<th>формат</th>
+			<th>плотность</th>
+			<th>единицы</th>
+			<th>на складе</th>
+			<th>мин. остаток</th>
+			<th></th><th></th><th></th>
+		</tr>
+	</thead>
+	{% for material in materials %}
+		<tr>
+			<td>{{ material.id }}</td>
+			<td category_id="{{material.category.id}}">{{ material.category.title }}</td>
+			<td>{{ material.title }}</td>
+			<td size_id="{{material.size.id}}">{{ material.size | pprint }}</td>
+			<td density_id="{{material.density.id}}">{{ material.density | pprint }}</td>
+			<td unit_id="{{material.unit.id}}">{{ material.unit.title }}</td>
+			<td active="{{material.active}}">
+				{% if  material.active == 1 %}
+					да
+				{% else%}
+					нет
+				{% endif %}
+			</td>
+			<td>{{ material.minimum }}</td>
+			<td class="c1" onclick="dialog(this, '{{material.id}}', 'copy')">&#128458;</td>
+			{{ base.command(material.id) }}
+		</tr>
+	{% endfor %}
+</table>
+
+<script>
+	SetupTable('#materialTable');
+</script>
+	
+{%- endmacro %}
+
+{% macro mainFrame(materials) -%}
+<div class="row">
+	<div class="col"></div>
+	<div class="col-10">
+		<div  style="height: 30px;">{{base.flashed()}}</div>
+		<label>материалы  </label>&nbsp;&nbsp;
+		{{base.command(0)}}
+		{{table(materials)}}
+	</div>
+	<div class="col"></div>
+</div>
+
+{%- endmacro %}
+
+
+{% block main %}
+<div id="mainFrame">
+	{{mainFrame(materials)}}
+</div>
+
+{{base.dialog()}}
+
+<div style="display:none">
+	{{form()}}
+	{{delete_form()}}
+</div>	
+	
+<script>
+var columns = {};
+
+function DensitySelect(elm) {
+	var density_title = $('#density_id option:selected').text();
+	if (density_title != 'нет') {
+		$('#title').val(density_title);
+	}
+}
+
+function dialog(elm, id, param) {
+	columns["cmd"] = param
+	columns["id"] = id
+
+		
+	var tr = $(elm).parent();
+	var td = tr.find('td');
+		
+	if (param == 'update') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('изменить');
+		$('#dialog_button').text('изменить');
+		$('#category_id').val($(td[1]).attr('category_id'));
+		$('#title').val($(td[2]).text());
+		$('#size_id').val($(td[3]).attr('size_id'));
+		$('#density_id').val($(td[4]).attr('density_id'));
+		$('#unit_id').val($(td[5]).attr('unit_id'));
+		$("#active").prop("checked", Boolean(Number($(td[6]).attr('active'))));
+		$('#minimum').val($(td[7]).text());
+				
+	} else if (param == 'insert') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('добавить');
+		$('#dialog_button').text('добавить');
+		$('#title').attr("placeholder","имя").val("").focus().blur();
+		columns['amount'] = 0;
+		
+	} else if (param == 'copy') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('копировать');
+		$('#dialog_button').text('применить');
+		$('#category_id').val($(td[1]).attr('category_id'));
+		$('#title').val($(td[2]).text());
+		$('#size_id').val($(td[3]).attr('size_id'));
+		$('#density_id').val($(td[4]).attr('density_id'));
+		$('#unit_id').val($(td[5]).attr('unit_id'));
+		$("#active").prop("checked", Boolean(Number($(td[6]).attr('active'))));
+		$('#minimum').val($(td[7]).text());
+		columns['cmd'] = 'insert'
+		columns['amount'] = 0;
+		
+	} else {
+		$('#dialog_form').html($('#delete_form').html());
+		$('#dialog_button').text('удалить');
+		$('#dialog_title').text('удалить');
+		$('#delete_title').text($(td[2]).text()) 
+		
+	}
+	$('#Dialog').modal()
+}
+
+function send(elm, idDialog) {
+	var title = $('#title').val();
+	var category = $('#category_id').val();
+	var size = $('#size_id').val();
+	var unit = $('#unit_id').val();
+	var density = $('#density_id').val();
+	var minimum = $('#minimum').val();
+		
+	if (columns['cmd'] != 'delete') {
+		if (!title || !category || !size || !unit || !density){
+			return
+		}
+	}
+	columns['title'] = $.trim(title);
+	columns['active'] = Number($('#active').prop('checked'));
+	columns['category_id'] = category;
+	columns['size_id'] = size;
+	columns['unit_id'] = unit;
+	columns['density_id'] = density;
+	columns['minimum'] = minimum;
+	
+	$(idDialog).modal('toggle');
+
+	$.ajax({
+        url: '/cifra/material',
+        data: columns,
+		type: 'POST',
+        dataType: 'HTML',
+        success: function(res) {
+			$('#mainFrame').html(res);
+        },
+        error: function(error) {
+            console.log(error);			
+        }		
+    });}
+
+</script>
+
+{% endblock %}

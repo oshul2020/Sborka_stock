@@ -1,0 +1,347 @@
+{% extends "w_layout.html" %}
+{% import 'w_base.html' as base %}
+
+{% macro form() -%}
+<form class="form" id="entity_form">
+	<div class="row mb-4">
+		<div class="col">
+			<select class="custom-select" id="category_id" onChange="CategorySelect()">
+				<option disabled selected value="0">категория...</option>
+				{% for category in categories %}
+					<option value="{{category.id}}">{{category.title}}</option>
+				{% endfor %}
+			</select>
+		</div>
+		<div class="col">
+			<select class="custom-select" id="symbol_id">
+				<option disabled selected value="0">символ...</option>
+			</select>
+		</div>
+		<div class="col">
+			<select class="custom-select" id="size_id">
+				<option disabled selected value="0">размер...</option>
+			</select>
+		</div>
+		<div class="col">			
+			<select class="custom-select" id="unit_id">
+				<option disabled selected value="0">единицы...</option>
+				{% for unit in units %}
+					<option value="{{unit.id}}">{{unit.title}}</option>
+				{% endfor %}
+			</select>
+		</div>	
+	</div>
+	
+	<div class="row mb-2">
+		<div class="col">
+			<input type="text" class="form-control" id="title" placeholder="название">
+		</div>
+		<div class="col-4">
+			<div class="form-check mt-2">
+					<input type="checkbox" class="form-check-input" id="active">
+					<label class="form-check-label" for="active">показывать</label>
+				</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="form-group col">
+			<label for="minimal">минимум</label>
+			<input type="number" class="form-control" id="minimal" placeholder="0" value="0" min="1">
+		</div>
+		<div class="form-group col">
+			<label for="capacity">максимум</label>
+			<input type="number" class="form-control" id="capacity" placeholder="1" value="1" min="1">
+		</div>
+		<div class="form-group col">
+			<label for="amount">на складе</label>
+			<input type="number" class="form-control" id="amount" placeholder="0" value="0" min="1" readonly>
+		</div>
+		<div class="col"></div>
+	</div>
+	<div class="row">
+		<div class="col">
+			<textarea class="form-control" cols="100" rows="2" placeholder="Инфо" id="info"></textarea>
+		</div>	
+	</div>
+	<button type="button" class="btn btn-primary float-right mt-2" id="dialog_button" 
+			onclick="send(this, '#Dialog')"></button>
+
+			
+</form>
+{% endmacro %}
+
+{% macro table(materials) -%}
+<table class="table table-sm table-striped" id="materialTable">
+	<thead>
+	<tr>
+		<th>id</th>
+		<th>категория</th>
+		<th>символ</th>
+		<th>название</th>
+		<th class="text-right">размер</th>
+		<th class="text-right">ед.</th>
+		<th class="text-right">мин.</th>
+		<th class="text-right">макс.</th>
+		<th class="text-right">всего</th>
+		<th class="text-right"></th>
+		<th></th><th></th>
+	</tr>
+	</thead>
+	{% for material in materials %}
+		<tr {{material.htmlAttr |safe }} >
+			<td>{{ material.id }}</td>
+			<td>{{ material.category.title }}</td>
+			<td>{{ material.symbol.title }} </td>
+			<td>{{ material.title }} </td>
+			<td class="text-right">{{ material.size.title }}</td>
+			<td class="text-right">{{ material.unit.title }}</td>
+			<td class="text-right">{{ material.minimal }}</td>
+			<td class="text-right">{{ material.capacity }}</td>
+			<td class="text-right">{{ material.amount }}</td>
+			<td active="{{material.active}}" class="text-right">
+				{% if  material.active == 1 %}
+					&nbsp; &#10003;
+				{% else%}
+					&nbsp; &#10005;
+				{% endif %}
+			</td>
+			{{ base.command(material.id) }}
+		</tr>
+	{% endfor %}
+</table>	
+{%- endmacro %}
+
+{% macro filter() -%}
+<div class="row">
+	<div class="col">
+		<input type="text" class="form-control" id="search" placeholder="поиск" 
+			onChange="search(this, '#materialTable')">
+	</div>
+	<div class="col">
+		<select class="custom-select" id="category_filter" onChange="CategoryFilter()">
+			<option disabled selected value="0">фильтр...</option>
+			{% for category in categories %}
+				<option value="{{category.id}}">{{category.title}}</option>
+			{% endfor %}
+		</select>
+	</div>	
+</div>	
+{%- endmacro %}
+
+{% macro mainFrame(materials, categories) -%}
+<div class="row m-4">
+	<div class="col">
+		<div  style="height: 30px;" id="flash">{{base.flashed()}}</div>
+		<div class="row mb-2">
+			<div class="col pt-2"><label>материал</label>&nbsp;&nbsp; {{base.command(0)}}</div>
+			<div class="col"></div>
+			<div class="col">{{filter()}}	</div>
+		</div>
+		<div id="tableFrame">{{table(materials)}}</div>
+	</div>
+</div>
+
+{%- endmacro %}
+
+
+{% block main %}
+<div id="mainFrame">
+	{{mainFrame(materials, categories)}}
+</div>
+
+{{base.dialog()}}
+
+<div style="display:none">
+	{{form()}}
+</div>	
+	
+<style type="text/css">
+	.table td, .table th {
+		padding: .25rem;
+		font-size: 1rem;
+	}
+</style>	
+	
+<script>
+$('#search').focus(); 
+
+var columns = {};
+var _symbol = 0;
+var _size = 0;
+var _unit = 0;
+
+function flash(html) {
+	$('#flash').append(html)
+	setTimeout(function(){$('#flash').text('');}, 5000);
+}
+
+function dialog(elm, id, param) {
+	var tr = $(elm).parent();
+	_symbol = $(tr).attr('symbol');
+	_size = $(tr).attr('size');
+	
+	
+	columns["cmd"] = param;
+	columns["id"] = id;
+
+	if (param == 'update') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('изменить');
+		$('#dialog_button').text('изменить');
+		$('#title').val($(tr).attr('title'));
+		$('#category_id').val($(tr).attr('category'));
+		$('#category_id').trigger("change");
+		$('#unit_id').val($(tr).attr('unit'));
+		$("#active").prop("checked", Boolean(Number($(tr).attr('active'))));
+		$('#minimal').val($(tr).attr('minimal'));
+		$('#capacity').val($(tr).attr('capacity'));
+		$('#amount').val($(tr).attr('amount'));
+		$('#info').val(decodeURI($(tr).attr('info')));
+		
+	} else if (param == 'insert') {
+		var filter = $('#category_filter').val();
+		_symbol = 0;
+		_size = 0;
+	
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('добавить');
+		$('#dialog_button').text('добавить');
+		if (filter) {
+			$('#category_id').val(filter);
+			$('#category_id').trigger("change");
+		}
+		
+	} else {
+		$('#dialog_form').html($('#delete_form').html());
+		$('#dialog_button').text('удалить');
+		$('#dialog_title').text('удалить');
+		$('#delete_title').text($(tr).attr('title'));  
+	}
+	$('#Dialog').modal();
+	$('#title').focus(); 
+}
+
+function send(elm, idDialog) {
+	var title = $('#title').val();
+	var category = $('#category_id').val();
+	var symbol = $('#symbol_id').val();
+	var size = $('#size_id').val();
+	var unit = $('#unit_id').val();
+	var filter = $('#category_filter').val();
+	
+	console.log($('#minimal').val());
+	
+	if (columns['cmd'] != 'delete') {
+		if (!title || !category || !symbol || !size || !unit){
+			return;
+		}
+	}
+	columns['title'] =  $.trim(title);
+	columns['category_id'] = category;
+	columns['symbol_id'] = symbol;
+	columns['size_id'] = size;
+	columns['unit_id'] = unit;
+	columns['active'] = Number($('#active').prop('checked'));
+	columns['amount'] = $('#amount').val();
+	columns['minimal'] = $('#minimal').val();
+	columns['capacity'] = $('#capacity').val();
+	columns['info'] = encodeURI($('#info').val());
+		
+	if (filter) {
+		columns['category_filter'] = filter;
+	}
+	
+	$(idDialog).modal('toggle');
+
+	$.ajax({
+        url: '/wide/material',
+        data: columns,
+		type: 'POST',
+        dataType: 'json',
+        success: function(res) {
+			console.log(res);
+			$('#tableFrame').html(res[0]);
+			$('#flash').append(res[1])
+			setTimeout(function(){$('#flash').text('');}, 5000);
+        },
+        error: function(error) {
+            console.log(error);			
+        }		
+    });}
+	
+function CategoryFilter() {
+	var category = $('#category_filter').val();
+	
+	$.ajax({
+        url: '/wide/data',
+        data: {cmd: 'materials_category', category_id: category},
+		type: 'POST',
+        dataType: 'HTML',
+        success: function(res) {
+			$('#tableFrame').html(res);
+        },
+        error: function(error) {
+            console.log(error);			
+        }		
+    });}	
+
+function CategorySelect() {
+	$.ajax({
+        url: '/wide/jdata',
+        data: {cmd:'category', category_id:$('#category_id').val(), childs:['size', 'symbol']},
+        type: 'POST',
+		dataType: 'json',
+        success: function(res) {
+			$('#size_id').html('<option disabled selected value="">Размер...</option>');
+			$('#symbol_id').html('<option disabled selected value="">Символ...</option>');
+			
+			$.each(res['symbol'], function(i,symbol){
+				var id = symbol['id']
+				var title = symbol['title']
+				$('#symbol_id').append("<option value='"+id+"'>"+title+"</option>");
+			})
+			
+			$.each(res['size'], function(i,size){
+				var id = size['id']
+				var title = size['title']
+				$('#size_id').append("<option value='"+id+"'>"+title+"</option>");
+			})
+			
+			if (_symbol > 0) {
+				$('#symbol_id').val(_symbol)
+			}
+			if (_size > 0) {
+				$('#size_id').val(_size)
+			}
+		},
+        error: function(error) {
+            console.log(error);
+        }
+    });
+}
+
+function search(elm, table) {
+	var filter, tr, td, i, txtValue, found;
+	filter = $(elm).val().toUpperCase();
+	tr = $(table).find("tr");
+	for (i = 1; i < tr.length; i++) {	//0 - header
+		td = $(tr[i]).find("td");
+		found = 0;
+		for (j = 1; j < td.length; j++) {	//0 - id
+			txtValue = $(td[j]).text().toUpperCase();
+			
+			if (txtValue.indexOf(filter) >= 0) {
+				found = 1;
+				break;
+			} 
+		}
+		if (found == 0) {
+			tr[i].style.display = "none";
+		} else {
+			tr[i].style.display = "";
+		}
+	}
+}
+
+</script>
+{% endblock %}

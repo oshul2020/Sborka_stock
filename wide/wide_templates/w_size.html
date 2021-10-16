@@ -1,0 +1,191 @@
+{% extends "w_layout.html" %}
+{% import 'w_base.html' as base %}
+
+{% macro form() -%}
+<form class="form" id="entity_form">
+	<div class="row">
+		<div class="col-4">
+			<input type="text" class="form-control" id="title" placeholder="название">
+		</div>
+		<div class="col-3">
+			<select class="custom-select" id="category_id">
+				<option disabled selected value="0">категория...</option>
+				{% for category in categories %}
+					<option value="{{category.id}}">{{category.title}}</option>
+				{% endfor %}
+			</select>
+		</div>
+		<div class="col-2">
+			<input type="number" class="form-control" id="param_1" placeholder="0" min="0">
+		</div>
+		<div class="col-2">
+			<input type="number" class="form-control" id="param_2" placeholder="0" min="0">
+		</div>
+		<div class="col"></div>
+	</div>	
+	<button type="button" class="btn btn-primary float-right mt-2"
+			id="dialog_button" onclick="send(this, '#Dialog')"></button>
+</form>
+{% endmacro %}
+
+{% macro table(sizes) -%}
+<table class="table table-sm table-striped">
+<tr>
+	<th>id</th>
+	<th>название</th>
+	<th>категория</th>
+	<th class="text-right">размер 1</th>
+	<th class="text-right">размер 2</th>
+	<th class="text-right">изменить</th><th></th>
+</tr>
+	{% for size in sizes %}
+		<tr>
+			<td>{{ size.id }}</td>
+			<td>{{ size.title }}</td>
+			<td category_id="{{size.category.id}}">{{ size.category.title }}</td>
+			<td class="text-right">{{ size.param_1 }}</td>
+			<td class="text-right">{{ size.param_2 }}</td>
+			{{ base.command(size.id) }}
+		</tr>
+	{% endfor %}
+</table>	
+{%- endmacro %}
+
+{% macro filter(sizes) -%}
+	<select class="custom-select" id="category_filter" onChange="CategoryFilter()">
+		<option disabled selected value="0">фильтр...</option>
+		{% for category in categories %}
+			<option value="{{category.id}}">{{category.title}}</option>
+		{% endfor %}
+	</select>
+{%- endmacro %}
+
+{% macro mainFrame(sizes, categories) -%}
+<div class="container">
+	<div class="row">
+		<div class="col-2"></div>
+		<div class="col">
+			<div  style="height: 30px;" id="flash">{{base.flashed()}}</div>
+			<div class="row m-2">
+				<div class="col pt-2"><label>размер</label>&nbsp;&nbsp; {{base.command(0)}}</div>
+				<div class="col"></div>
+				<div class="col">{{filter(categories)}}	</div>
+			</div>
+			
+			<div id="tableFrame">{{table(sizes)}}</div>
+		</div>
+		<div class="col-2"></div>
+	</div>
+</div>
+{%- endmacro %}
+
+
+{% block main %}
+<div id="mainFrame">
+	{{mainFrame(sizes, categories)}}
+</div>
+
+{{base.dialog()}}
+
+<div style="display:none">
+	{{form()}}
+</div>	
+	
+<script>
+var columns = {};
+
+function flash(html) {
+	$('#flash').append(html)
+	setTimeout(function(){$('#flash').text('');}, 5000);
+}
+
+function dialog(elm, id, param) {
+	columns["cmd"] = param
+	columns["id"] = id
+	
+	var tr = $(elm).parent();
+	var td = tr.find('td');
+		
+	if (param == 'update') {
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('изменить');
+		$('#dialog_button').text('изменить');
+		$('#title').val($(td[1]).text());
+		$('#category_id').val($(td[2]).attr('category_id'));
+		$('#param_1').val($(td[3]).text());
+		$('#param_2').val($(td[4]).text());
+		
+	} else if (param == 'insert') {
+		var filter = $('#category_filter').val();
+		$('#dialog_form').html($('#entity_form').html());
+		$('#dialog_title').text('добавить');
+		$('#dialog_button').text('добавить');
+		if (filter) {
+			$('#category_id').val(filter);
+		}
+		
+	} else {
+		$('#dialog_form').html($('#delete_form').html());
+		$('#dialog_button').text('удалить');
+		$('#dialog_title').text('удалить');
+		$('#delete_title').text($(td[1]).text())  
+	}
+	$('#Dialog').modal()
+	$('#title').focus(); 
+}
+
+function send(elm, idDialog) {
+	var title = $('#title').val();
+	var category = $('#category_id').val();
+	var filter = $('#category_filter').val();
+	
+	if (columns['cmd'] != 'delete') {
+		if (!title || !category){
+			return
+		}
+	}
+	columns['title'] =  $.trim(title);
+	columns['category_id'] = category;
+	columns['param_1'] = $('#param_1').val()
+	columns['param_2'] = $('#param_2').val()	
+	
+	if (filter) {
+		columns['category_filter'] = filter;
+	}
+	
+	$(idDialog).modal('toggle');
+
+	$.ajax({
+        url: '/wide/size',
+        data: columns,
+		type: 'POST',
+        dataType: 'json',
+        success: function(res) {
+			console.log(res);
+			$('#tableFrame').html(res[0]);
+			$('#flash').append(res[1])
+			setTimeout(function(){$('#flash').text('');}, 5000);
+        },
+        error: function(error) {
+            console.log(error);			
+        }		
+    });}
+	
+function CategoryFilter() {
+	var category = $('#category_filter').val();
+	
+	$.ajax({
+        url: '/wide/data',
+        data: {cmd: 'sizes_category', category_id: category},
+		type: 'POST',
+        dataType: 'HTML',
+        success: function(res) {
+			$('#tableFrame').html(res);
+        },
+        error: function(error) {
+            console.log(error);			
+        }		
+    });}	
+
+</script>
+{% endblock %}

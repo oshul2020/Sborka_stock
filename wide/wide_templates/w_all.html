@@ -1,0 +1,68 @@
+{% macro rows(entity) -%}
+	<td>id: {{entity.id}}</td>
+	<td class="c1 text-right" onclick="">{{entity.size}} </td>
+	<td class="text-right">склад: {{entity.amount}}</td>
+	<td class="text-right">min: {{entity.minimal}}</td>
+	<td class="text-right">max: {{entity.capacity}}</td>
+	<td class="text-right">{{entity.unit.title}}</td>
+	<td></td>
+{%- endmacro %}
+
+{% macro table(data) -%}
+<div class="row">
+	<div class="col mx-4">
+		<table class="table table-sm" id="stockTable">
+		{% for title, materials in data.items() %}
+			<tr style="border-top: 2px solid;" {{category_id}}>
+				<td class="c1" style="width: 400px;" rowspan="{{materials|length}}"	>
+					({{materials[0].symbol.title}}) {{title}}
+				</td>
+				{{ rows(materials[0])}}
+			</tr>
+			{% for material in materials[1:] %}
+				<tr>
+					{{ rows(material)}}
+				</tr>
+			{% endfor %}			
+		{% endfor %}				
+		</table>
+	</div>
+</div>	
+{%- endmacro %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta charset="UTF-8" name="viewport" content="initial-scale=1, width=device-width">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" >
+        <link href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+		<link href="/static/styles.css" rel="stylesheet">
+        
+		<script src="https://code.jquery.com/jquery-3.4.1.js" ></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+		<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+		
+		<script src="/static/md5.js"></script>
+		<script src="/static/scripts.js"></script>
+		<script src="/static/stock_scripts.js"></script>
+		
+		<title>Весь склад широкоформатной печати</title>
+    </head>
+
+
+    <body>
+		
+
+        <main class="container-fluid p-1">
+            {% for category, materials in data.items() %}
+				<h5 class="p-1 bg-secondary">{{category}}</h5>
+				{% for material in materials %}
+					{{table(material)}}
+				{% endfor %}	
+			{% endfor %}	
+        </main>
+		
+    </body>
+
+</html>

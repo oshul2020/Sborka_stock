@@ -1,0 +1,268 @@
+{% extends "c_layout.html" %}
+{% import 'c_log_table.html' as table%}
+{% import 'c_base.html' as base %}
+
+{% macro FilterDialog(form) -%}
+<div class="modal" id="filter_dialog" tabindex="-1" role="dialog">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">фильтр журнала</h4>
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">×</span>
+				<span class="sr-only">Close</span></button>
+			</div>
+			<div class="modal-body">
+				<div class="col-md-auto">
+					<form class="form">
+						<div class="row">
+							<div class="col-3">
+								<select class="custom-select m-2" id="process_id" onchange="onProcessSelect(this)">
+									<option disabled selected value=-1>процесс...</option>
+									{% for process in processes %}
+										<option value={{loop.index0}}>{{process}}</option>
+									{% endfor %}
+								</select>
+							</div>
+							<div class="col"></div>
+						</div>
+						<div class="row">
+							<div class="col-4">
+								<select class="custom-select m-2" id="category_id" onchange="onCategorySelect(this)">
+									<option disabled selected value="0">категория...</option>
+								</select>	
+							</div>
+							<div class="col-4">
+								<select class="custom-select m-2" id="density_id" onchange="onDensitySelect(this)">
+									<option disabled selected value="0">материал...</option>
+								</select>
+							</div>
+							<div class="col-4">
+								<select class="custom-select m-2" id="size_id" onchange="onSizeSelect(this)">
+									<option disabled selected value="0">формат...</option>
+								</select>
+							</div>
+							<div class="col"></div>
+						</div>
+						<button type="button" class="btn btn-primary m-2 float-right" id="filter_dialog_button" 
+							disabled onclick="onFilterDialogSubmit()">применить</button>
+					</form>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+{%- endmacro %}
+
+{% macro filter() -%}
+<div class="row mb-3">
+	<div class="col-2">	
+		<select class="custom-select" id="action_filter" onchange="ChangePage(1)">
+			<option value="-1">действие</option>
+			<option value="0">списание</option>
+			<option value="1">получение</option>
+			<option value="3">инвентаризация</option>
+		</select>
+	</div>	
+	<div class="col-3">
+		<select class="custom-select" id="user_filter" onchange="ChangePage(1)">
+			<option value="0">пользователь</option>
+			{% for user in users%}
+				<option value={{ user.id }}>{{ user.title }}</option>
+			{% endfor %}
+		</select>
+	</div>
+	<div class="col">
+		<input type="text" class="c1 form-control"  id="filter_text" 
+			onclick="FilterDialog()" placeholder="фильтр ...">
+
+	</div>
+	<div class="col-1">
+		<div class="c1 mt-2" onclick="onReset()">&#10006;</div>
+	</div>
+</div>	
+{%- endmacro %}
+
+{% block main %}
+<div class="row">
+	<div class="col"></div>
+	<div class="col-10">
+		{{filter()}}
+		<div id="mainFrame">
+			<div id="log_table">{{table.table(paginate, actions)}}</div>
+		</div>
+	</div>	
+	<div class="col"></div>
+</div>
+
+{{ FilterDialog() }}
+{{base.dialog()}}
+
+{% include 'c_stat.html' %}
+
+<script>
+	var data = {'page':1};
+	var filter_text = '';
+		
+	function ChangePage(page) {
+		data['page'] = page;
+		SendForm();
+	};
+
+	function SendForm() {
+		data['action_id'] = $('#action_filter').val();
+		data['user_id'] = $('#user_filter').val();
+		
+		$.ajax({
+			url: '/cifra/log',
+			data: data,
+			type: 'POST',
+			dataType: 'HTML',
+			success: function (res) {
+				$('#log_table').html(res);
+			},
+			error: function(error) {
+				console.log(error);			
+			}		
+		});
+	};
+	
+	function onProcessSelect(elm){
+		var process_id = $(elm).val();
+		$('#category_id').html('<option disabled selected value="0">категория...</option>');
+		$('#density_id').html('<option disabled selected value="0">материал...</option>');
+		$('#size_id').html('<option disabled selected value="0">формат...</option>');
+		$('#filter_dialog_button').prop('disabled', false);
+		
+		$.ajax({
+			url: '/cifra/data',
+			data: {'cmd':'categories_process', 'process_id': process_id},
+			type: 'POST',
+			dataType: 'json',
+			success: function (res) {
+				$('#category_id').html('<option disabled selected value="0">категория...</option>');
+					$.each(res, function(i,cat){
+						$('#category_id').append("<option value="+cat['id']+">"+cat['title']+"</option>");
+					});
+					
+				data['process_id'] = process_id;
+				data['filter'] = 'process';
+				filter_text = $("#process_id option:selected").html();
+			},
+			error: function(error) {
+				console.log(error);			
+			}		
+		});
+	};
+
+	function onCategorySelect(elm){
+		var category_id = $(elm).val();
+		$('#density_id').html('<option disabled selected value="0">материал...</option>');
+		$('#size_id').html('<option disabled selected value="0">формат...</option>');
+		
+		var process = $("#process_id option:selected").html();
+		var category = $("#category_id option:selected").html();
+		
+		$.ajax({
+			url: '/cifra/data',
+			data: {'cmd':'densities_category', 'category_id': category_id, 'type':'json'},
+			type: 'POST',
+			dataType: 'json',
+			success: function (res) {
+				$('#density_id').html('<option disabled selected value="0">материал...</option>');
+					$.each(res, function(title,density_id){
+						$('#density_id').append("<option value="+density_id+">"+title+"</option>");
+					});
+				
+				data['category_id'] = category_id;
+				data['filter'] = 'category';
+				filter_text = process + ' • ' + category;
+			},
+			error: function(error) {
+				console.log(error);			
+			}		
+		});
+	};	
+
+	function onDensitySelect(elm){
+		var density_id = $(elm).val();
+		var category_id = $('#category_id').val();
+		$('#size_id').html('<option disabled selected value="0">формат...</option>');
+
+		var process = $("#process_id option:selected").html();
+		var category = $("#category_id option:selected").html();
+		var material = $("#density_id option:selected").html();
+				
+		$.ajax({
+			url: '/cifra/data',
+			data: {'cmd':'sizes_density_category', 'density_id': density_id, 
+				'category_id': category_id, 'title':material},
+			type: 'POST',
+			dataType: 'json',
+			success: function (res) {
+				$('#size_id').html('<option disabled selected value="0">формат...</option>');
+					$.each(res, function(size,size_id){
+						$('#size_id').append("<option value="+size_id+">"+size+"</option>");
+					});
+					
+				data['category_id'] = category_id;
+				data['density_id'] = density_id;
+				data['material_title'] = material;
+				data['filter'] = 'density';	
+				filter_text = process + ' • ' + category + ' • ' + material;
+			},
+			error: function(error) {
+				console.log(error);			
+			}		
+		});
+	};	
+	
+	function onSizeSelect(elm){
+		var size_id = $(elm).val();
+		var density_id = $('#density_id').val();
+		var category_id = $('#category_id').val();
+		
+		var material = $("#density_id option:selected").html();
+		var size = $("#size_id option:selected").html();
+		var process = $("#process_id option:selected").html();
+		var category = $("#category_id option:selected").html();
+				
+		var d = {'cmd':'material', 'density_id':density_id,'category_id':category_id, 
+					'size_id':size_id, 'title':material};
+		$.ajax({
+			url: '/cifra/data',
+			data: d,
+			type: 'POST',
+			dataType: 'json',
+			success: function (res) {
+				data['filter'] = 'material';
+				data['material_id'] = res['id'];
+				filter_text = process + ' • ' + category + ' • ' + material + ' • ' + size;
+			},
+			error: function(error) {
+				console.log(error);			
+			}		
+		});
+	};	
+	
+	function FilterDialog(){
+		$('#filter_dialog').modal();
+	};
+	
+	function onFilterDialogSubmit() {
+		data['page'] = 1;
+		$('#filter_dialog').modal('toggle');
+		$('#filter_text').val(filter_text);
+		SendForm();
+	}
+	
+	function onReset(){
+		$('#action_filter').val(-1);
+		$('#user_filter').val(0);
+		$('#filter_text').val('фильтр ...');
+		data = {'page':1};
+		SendForm();
+}
+	
+</script>	
+{% endblock %}

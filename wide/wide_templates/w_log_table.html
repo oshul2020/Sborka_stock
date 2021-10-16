@@ -1,0 +1,54 @@
+{% import 'w_base.html' as base %}
+
+{% macro table(paginate, actions) -%}
+	<table class="table table-sm">
+	<tr>
+		{% if session['wide_admin'] %}
+			<th>id</th>
+		{% endif %}	
+		
+		<th style="width: 150px;">когда</th>
+		<th>кто</th>
+		<th>действие</th>
+		<th>символ</th>
+		<th>материал</th>
+		<th>размер</th>
+		<th class="text-right">кол-во</th>
+		<th>единицы</th>
+		<th class="text-right">было</th>
+	</tr>
+		{% for rec in paginate.items %}
+			{% if rec.action == 0 %}	
+				<tr class = "table-danger" >
+			{% elif rec.action == 1 %}
+				<tr class = "table-success" >
+			{% else %}	
+				<tr>
+			{% endif %}
+				{% if session['wide_admin'] %}
+					<td>{{ rec.id }}</td>
+				{% endif %}	
+					<td>{{ rec.time.strftime('%d-%m-%y %H:%M') }}</td>
+					<td >{{ rec.user}}</td>
+					<td>
+						{{ actions[rec.action] }}
+						{% if rec.info %}
+							<a href="#" title="{{rec.info}}">&#9888;</a>
+						{% endif %}	
+					</td>
+					<td>{{ rec.material.symbol}}</td>
+					<td class="c1" onclick="StatDialog({{rec.material.id}}, 'material')" title="статистика по материалу">
+						{{ rec.material.category.title}} {{ rec.material.title}}
+					</td>
+					<td class="c1" onclick="StatDialog({{rec.material.id}}, 'size')" title="статистика по размеру">
+						{{ rec.material.size}} 
+					</td>
+					<td class="text-right">{{ rec.amount}}</td>
+					<td>{{ rec.material.unit.title}}</td>
+					<td class="text-right">{{ rec.stock}}</td>
+				</tr>
+		{% endfor %}
+	</table>	
+	{{ base.pagination(paginate)}}	
+	
+{%- endmacro %}

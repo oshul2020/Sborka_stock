@@ -1,0 +1,9 @@
+[Unit]
+Description=uWSGI instance to serve myapp
+
+[Service]
+ExecStartPre=-/bin/bash -c 'mkdir -p /run/uwsgi; chown www-data:www-data /run/uwsgi'
+ExecStart=/bin/bash -c 'cd /home/alex/sborkaapp; source appenv/bin/activate; uwsgi --ini Sborka/sborka.ini'
+
+[Install]
+WantedBy=multi-user.target

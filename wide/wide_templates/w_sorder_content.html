@@ -1,0 +1,124 @@
+{% extends "w_layout.html" %}
+{% import 'w_base.html' as base %}
+
+{% macro rows(entity) -%}
+	<!-- <td>{{entity.material.symbol}}</td> -->
+	{% if entity.result|int() == 0 %}
+		{% set color = "table-danger" %}
+	{% elif entity.result|int() != entity.amount|int() %}
+		{% set color = "table-warning" %}
+	{% else%}
+		{% set color = "" %}
+	{% endif%}
+	{% if session['wide_admin'] and session['wide_admin'].id == 1%}
+		<td class="{{color}}">{{entity.id}}</td>
+	{% endif %}
+	<td class="{{color}}">{{entity.material.symbol}}</td>
+	<td class="c1 text-right {{color}}" onclick="StatDialog({{entity.material_id}}, 'size')" title="статистика по размеру">
+		{{entity.material.size}} 
+	</td>
+	<td class="text-right {{color}}">{{entity.amount}} {{entity.material.unit.title}}</td>
+	<td class="text-right {{color}}">{{entity.result}}</td>
+	
+	<td class="text-right {{color}}">
+		{% if entity.comment %}
+			<span class="c1" title="{{entity.comment}}" id="comment">&#9888;</span>
+		{% endif %}	
+		{% if entity.timeclose %}
+			{{entity.timeclose.strftime('%d-%m-%y %H:%M')}} 
+		{% else %}
+			-
+		{% endif %}	
+	</td>
+	<td class="c1 text-right {{color}}" onclick="resetOrder({{entity.id}})" title="вернуть в заявки">
+		{% if session['wide_admin'] and entity.result == 0 %}
+			&#10005;
+		{% endif %}
+	</td>	
+	
+{%- endmacro %}
+
+{% macro table(data, order) -%}
+<div class="row mx-4">
+	<div class="col"><h4>материалы в {{order}} от: {{order.timeopen.strftime('%d-%m-%y')}}</h4></div>	
+	<div class="col"><div class="row float-right mr-2"><a href="/wide/sorder">назад к списку заказов</a></div></div>
+</div>
+	<div class="row">
+	<div class="col mx-4">
+	<table class="table table-sm">
+	<thead>
+		<tr>
+			<th>материал</th>
+			{% if session['wide_admin'] and session['wide_admin'].id == 1%}
+				<th>request_id</th>
+			{% endif %}
+			<th>символ</th>
+			<th class="text-right">размер</th>
+			<th class="text-right">заказно</th>
+			<th class="text-right">получено</th>
+			<th class="text-right">дата</th>
+			<th class="text-right"></th>
+		</tr>
+	</thead>
+		{% for title, requests in data.items() %}
+			<tr style="border-top: 2px solid;">
+				<td class="c1" style="width: 400px;" rowspan="{{requests|length}}"	
+					onclick="StatDialog({{requests[0].material_id}}, 'material')" title="статистика по материалу">
+					{{title}}
+				</td>
+					{{ rows(requests[0])}}
+			</tr>
+			{% for request in requests[1:] %}
+				<tr>
+					{{ rows(request)}}
+				</tr>
+			{% endfor %}			
+		{% endfor %}				
+	
+	</table>
+	</div>
+	</div>	
+{%- endmacro %}
+
+
+
+
+{% macro mainFrame() -%}
+	<div class="row m-4">
+		<div class="col">
+			<div  style="height: 30px;">{{base.flashed()}}</div>
+			<div id="table">{{table(data, order)}}</div>
+		</div>
+	</div>
+{%- endmacro %}
+
+
+{% block main %}
+<div id="mainFrame">
+	{{mainFrame()}}
+</div>
+
+{{base.dialog()}}
+{% include 'w_stat.html' %}
+
+<script>
+
+function resetOrder(id) {
+	$.ajax({
+		url: '/wide/request',
+		data: {cmd:'reset_order', 'request_id':id},
+		type: 'POST',
+		dataType: 'HTML',
+		success: function(res) {
+			$("body").load('/wide/sorder?id={{order.id}}');
+		},
+		error: function(error) {
+			console.log(error);
+		}
+	});
+}
+
+
+
+</script>
+{% endblock %}

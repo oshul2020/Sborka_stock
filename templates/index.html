@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block login %}
+    <div class="container">
+    <div class="row">
+        <div class = "col-md-auto">
+            <input type="password" class="form-control" name = "passw" placeholder="Пароль">
+        </div>
+        <div class = "col-md-auto">    
+            <button type="submit"  name="action" value="login" class="btn btn-primary btn-block">Вход в ордер</button>
+         </div>
+         <div class = "col-md-auto">   
+            <button type="submit"  name="action" value="logout" class="btn btn-primary btn-block">Выход из ордера</button>
+        </div>
+    </div>
+    </div>
+{% endblock %}
+
+{% block main %}
+{{info | safe}}
+{% endblock %}

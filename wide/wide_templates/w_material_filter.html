@@ -1,0 +1,76 @@
+{% macro filter(categories) -%}
+<div class="row mb-3">
+	<div class="col-2">
+		<select class="custom-select" id="category_id" onchange="onCategoryChange(this)">
+			<option selected value="0">категория...</option>
+			{% for category in categories %}
+				<option value="{{category.id}}">{{category.title}}</option>
+			{% endfor %}
+		</select>	
+	</div>
+	<div class="col-3">
+		<select class="custom-select" id="material_title" onchange="onMaterialChange(this)">
+			<option selected value="-1">материал...</option>
+		</select>
+	</div>
+	<div class="col-2">
+		<select class="custom-select" id="material_id" onchange="onSizeChange(this)">
+			<option selected value="0">размер...</option>
+		</select>
+	</div>
+	<div class="col-1"></div>
+</div>	
+
+<script>
+	var materials;
+	
+	function onCategoryChange(elm){
+		$('#material_title').html('<option value="-1">материал...</option>');
+		$('#material_id').html('<option value="0">размер...</option>');
+		materials = new Map();
+		var category_id = $(elm).val();
+		
+		filterByCategory();
+	
+		$.ajax({
+			url: '/wide/jdata',
+			data: {cmd:'category', category_id: category_id, childs:['material']},
+			type: 'POST',
+			dataType: 'json',
+			success: function (res) {
+				$.each(res['material'], function(i, m){
+					if (!materials[m['title']]) {
+						materials[m['title']] = [];
+					}
+					materials[m['title']].push([m['id'],m['size']['title']]);
+				});
+
+				$.each(materials, function(material_title) {
+				  $('#material_title').append("<option value=0>"+material_title+"</option>");
+				});
+			},
+			error: function(error) {
+				console.log(error);			
+			}			
+		});
+	};	
+	
+	function onMaterialChange(elm){
+		var material = $("#material_title option:selected").html();
+		$('#material_id').html('<option value="0">размер...</option>');
+		
+		$.each( materials[material], function(i,data) {
+			$('#material_id').append("<option value='"+data[0]+"'>"+data[1]+"</option>");
+		});
+		
+		filterByMaterialTitle();
+		
+	};	
+	
+	function onSizeChange(elm){
+		filterByMaterial();
+	};
+
+</script>
+
+{%- endmacro %}
