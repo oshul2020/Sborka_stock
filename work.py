@@ -9,10 +9,11 @@ from collections import defaultdict
 #exclusions = ('grommet', 'gotovo', 'готово', 'ночная', 'Ночь', 'рез', 'ZundRez', 'rez', '/plot', 'day', 'night', 'Night')
 exclusions = ('cifra', 'grommet', 'ночная', 'Ночь', 'рез', 'ZundRez', 'rez', '/plot', 'day', 'night', 'Night', 'ДЕНЬ')
 ready = ('готово', )
+months = ('','Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь')
 
 test = ('256416', '256176', '256234', '256320')
 
-locale.setlocale(locale.LC_ALL, '')
+#locale.setlocale(locale.LC_ALL, '')
 
 class DayWork:
 	def __init__(self):
@@ -94,11 +95,11 @@ class File:
 		self.dimention = None
 
 def get_files(date, works, order):
-	month = date.strftime("%B").lower()
+	month = months[date.month].lower()
 	day = f'{date.day:0>2}'
 	
 	workPath = Path(config.workDir, month, day)
-
+	
 	if not workPath.exists():
 		return
 	
@@ -176,7 +177,7 @@ def load(order):
 	
 	for single_date in (datetime.now() - timedelta(n) for n in reversed(range(config.workDays))):
 		get_files(single_date, data, order)
-		
+	
 	return data
 
 if __name__ == "__main__":
